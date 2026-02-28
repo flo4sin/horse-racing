@@ -60,8 +60,8 @@ button:hover {
 <body>
 
 <h1>Dave Clicker Idle Game</h1>
-<!-- Replace the src with your provided image -->
-<img src="https://i.imgur.com/your_image_link_here.jpg" id="dave" alt="Dave" />
+<!-- Your provided image of Dave -->
+<img src="https://i.imgur.com/1UfrW92.png" id="dave" alt="Dave" />
 
 <div id="stats">
   <div>Money: $<span id="money">0</span></div>
@@ -75,11 +75,12 @@ button:hover {
 </div>
 
 <script>
-// Copy the previous game script here
+// Game variables
 let money = 0;
 let moneyPerClick = 1;
 let autoIncome = 0;
 
+// Elements
 const moneySpan = document.getElementById('money');
 const perClickSpan = document.getElementById('perClick');
 const autoIncomeSpan = document.getElementById('autoIncome');
