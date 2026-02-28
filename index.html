@@ -1,48 +1,117 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Dave Poker</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dave Poker – Texas Hold'em</title>
 <script src="https://cdn.tailwindcss.com"></script>
+
 <style>
-body {
-  font-family: Inter, sans-serif;
-  background:#1a202c;
-  color:#e2e8f0;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  min-height:100vh;
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+
+:root{
+    --felt:#35654d;
+    --bg:#1a202c;
+    --red:#cc0000;
 }
+
+body{
+    font-family:'Inter',sans-serif;
+    background:var(--bg);
+    color:white;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+}
+
 #game{
-  max-width:900px;
-  width:100%;
-  padding:1rem;
-  background:#2d3748;
-  border-radius:1rem;
+    width:100%;
+    max-width:900px;
+    background:#2d3748;
+    padding:10px;
+    border-radius:12px;
 }
-.cards{
-  display:flex;
-  justify-content:center;
-  gap:6px;
+
+.card-slot{
+    width:50px;
+    height:75px;
+    perspective:1000px;
+    display:inline-block;
+    margin:2px;
 }
-.card{
-  width:48px;
-  height:72px;
-  background:white;
-  color:black;
-  border-radius:6px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-weight:bold;
+
+.card-inner{
+    width:100%;
+    height:100%;
+    position:relative;
+    transition:transform .6s;
+    transform-style:preserve-3d;
 }
+
+.flipped .card-inner{
+    transform:rotateY(180deg);
+}
+
+.card-front,.card-back{
+    position:absolute;
+    width:100%;
+    height:100%;
+    border-radius:6px;
+    backface-visibility:hidden;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+    font-weight:bold;
+    padding:3px;
+}
+
+.card-front{
+    background:white;
+    color:black;
+    transform:rotateY(180deg);
+}
+
+.card-back{
+    background:linear-gradient(145deg,#a73737,#d94848);
+    border:2px solid gold;
+}
+
+.red{color:var(--red);}
+
+.table{
+    background:var(--felt);
+    padding:10px;
+    border-radius:10px;
+    margin-top:5px;
+}
+
+.player{
+    margin-top:6px;
+}
+
 button{
-  padding:.5rem 1rem;
-  border-radius:.5rem;
-  margin:.25rem;
-  font-weight:bold;
+    font-weight:bold;
+    border-radius:8px;
+    padding:6px 12px;
+}
+
+@keyframes deal{
+from{transform:translateY(-200px);opacity:0;}
+to{transform:translateY(0);opacity:1;}
+}
+
+.new{animation:deal .4s ease;}
+
+.help{
+position:absolute;
+top:10px;
+right:10px;
+background:#111;
+padding:10px;
+border:2px solid gold;
+display:none;
+max-width:300px;
 }
 </style>
 </head>
@@ -50,362 +119,301 @@ button{
 
 <div id="game">
 
-<h1 class="text-center text-2xl font-bold text-yellow-400 mb-2">
-DAVE POKER
-</h1>
+<h1 class="text-3xl font-black text-yellow-400 text-center">DAVE POKER</h1>
 
-<!-- Dealer -->
-<div class="text-center">
-Dealer
-<div id="dealer-cards" class="cards"></div>
+<div class="flex justify-between text-lg bg-gray-800 p-2 rounded">
+<div>Chips: <span id="chips">$2000</span></div>
+<div>Pot: <span id="pot">$0</span></div>
+<div>High: <span id="high">$2000</span></div>
 </div>
 
-<!-- COMMUNITY -->
-<div class="text-center">
-Table
-<div id="community-cards" class="cards"></div>
+<div class="table text-center">
+
+<div>
+Community:
+<div id="community"></div>
 </div>
 
-<!-- Players -->
-<div class="grid grid-cols-3 gap-2 mt-2">
-
-<div class="bg-gray-700 p-2 rounded">
-You
-<div id="player-cards" class="cards"></div>
-Chips: $<span id="player-chips">2000</span><br>
-Bet: $<span id="player-bet">0</span><br>
-<span id="player-status"></span>
-</div>
-
-<div class="bg-gray-700 p-2 rounded">
-Bot 1
-<div id="bot1-cards" class="cards"></div>
-Chips: $<span id="bot1-chips">2000</span><br>
-Bet: $<span id="bot1-bet">0</span><br>
-<span id="bot1-status"></span>
-</div>
-
-<div class="bg-gray-700 p-2 rounded">
-Bot 2
-<div id="bot2-cards" class="cards"></div>
-Chips: $<span id="bot2-chips">2000</span><br>
-Bet: $<span id="bot2-bet">0</span><br>
-<span id="bot2-status"></span>
-</div>
+<div id="players"></div>
 
 </div>
 
-<!-- buttons -->
-<div class="text-center mt-3">
+<div class="flex gap-2 mt-2">
 
-<button id="start-btn" class="bg-green-600">
-Start Hand
-</button>
+<button onclick="bet(50)" class="bg-green-600">Bet 50</button>
+<button onclick="bet(100)" class="bg-green-700">Bet 100</button>
+<button onclick="call()" class="bg-blue-600">Call</button>
+<button onclick="fold()" class="bg-red-600">Fold</button>
+<button onclick="nextRound()" class="bg-yellow-500 text-black">Next</button>
 
-<div id="bet-buttons" style="display:none;">
+<button onclick="toggleHelp()" class="bg-purple-600">Help</button>
 
-<button onclick="playerBet(10)" class="bg-blue-600">
-Bet $10
-</button>
-
-<button onclick="playerBet(50)" class="bg-blue-600">
-Bet $50
-</button>
-
-<button onclick="playerBet(players[0].chips)" class="bg-red-600">
-All in
-</button>
-
-<button onclick="playerFold()" class="bg-gray-600">
-Fold
-</button>
+<button onclick="toggleMusic()" class="bg-pink-600">Music</button>
 
 </div>
 
-</div>
-
-<div class="text-center mt-2">
-Pot: $<span id="pot">0</span>
-</div>
-
-<div id="status" class="text-center mt-2"></div>
+<div id="msg" class="mt-2 text-center font-bold"></div>
 
 </div>
+
+<div id="help" class="help">
+<h2 class="text-yellow-400 font-bold">Poker Hands</h2>
+<ul class="text-sm">
+<li>Royal Flush</li>
+<li>Straight Flush</li>
+<li>Four of a Kind</li>
+<li>Full House</li>
+<li>Flush</li>
+<li>Straight</li>
+<li>Three of a Kind</li>
+<li>Two Pair</li>
+<li>Pair</li>
+<li>High Card</li>
+</ul>
+</div>
+
+<audio id="dealSound" src="https://actions.google.com/sounds/v1/cartoon/pop.ogg"></audio>
+<audio id="winSound" src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg"></audio>
+<audio id="music" loop src="https://actions.google.com/sounds/v1/ambiences/casino.ogg"></audio>
 
 <script>
 
-const suits=["♥","♦","♣","♠"];
-const ranks=["A","2","3","4","5","6","7","8","9","10","J","Q","K"];
+const suits=['♠','♥','♦','♣']
+const ranks=['2','3','4','5','6','7','8','9','10','J','Q','K','A']
 
-let deck=[];
-let community=[];
-let pot=0;
-let phase="idle";
+let deck=[]
+let players=[]
+let community=[]
+let pot=0
+let chips=2000
+let high=2000
+let difficulty="normal"
 
-let players=[
-{name:"player",chips:2000,bet:0,hand:[],fold:false},
-{name:"bot1",chips:2000,bet:0,hand:[],fold:false},
-{name:"bot2",chips:2000,bet:0,hand:[],fold:false}
-];
-
-let dealer={hand:[]};
-
-function sleep(ms){
-return new Promise(r=>setTimeout(r,ms));
-}
+const chipsEl=document.getElementById("chips")
+const potEl=document.getElementById("pot")
+const highEl=document.getElementById("high")
+const msg=document.getElementById("msg")
 
 function makeDeck(){
-
-deck=[];
-
+deck=[]
 for(let s of suits)
-for(let r of ranks){
-
-let v=r==="A"?14:
-["J","Q","K"].includes(r)?10:
-parseInt(r);
-
-deck.push({suit:s,rank:r,value:v});
+for(let r of ranks)
+deck.push({s,r})
+deck.sort(()=>Math.random()-.5)
 }
 
-deck.sort(()=>Math.random()-.5);
+function cardHTML(card,flip=true){
 
+let red=(card.s=='♥'||card.s=='♦')?'red':''
+
+return `
+<div class="card-slot flipped new">
+<div class="card-inner">
+<div class="card-back"></div>
+<div class="card-front ${red}">
+<div>${card.r}</div>
+<div>${card.s}</div>
+<div style="transform:rotate(180deg)">${card.r}</div>
+</div>
+</div>
+</div>
+`
 }
 
-function deal(p){
-
-p.hand.push(deck.pop());
-
+function draw(){
+return deck.pop()
 }
 
-function drawCards(id,cards){
+function start(){
 
-let div=document.getElementById(id);
+makeDeck()
 
-div.innerHTML="";
+players=[
+{name:"You",hand:[draw(),draw()],chips:chips,fold:false,ai:false},
+{name:"Dave",hand:[draw(),draw()],chips:2000,fold:false,ai:true},
+{name:"Bot",hand:[draw(),draw()],chips:2000,fold:false,ai:true}
+]
 
-for(let c of cards){
+community=[]
 
-let el=document.createElement("div");
-el.className="card";
-el.innerHTML=c.rank+c.suit;
+render()
 
-div.appendChild(el);
-
-}
-
-}
-
-function updateUI(){
-
-drawCards("player-cards",players[0].hand);
-drawCards("bot1-cards",players[1].hand);
-drawCards("bot2-cards",players[2].hand);
-
-drawCards("dealer-cards",dealer.hand);
-drawCards("community-cards",community);
-
-player-chips.innerText=players[0].chips;
-bot1-chips.innerText=players[1].chips;
-bot2-chips.innerText=players[2].chips;
-
-player-bet.innerText=players[0].bet;
-bot1-bet.innerText=players[1].bet;
-bot2-bet.innerText=players[2].bet;
-
-pot.innerText=pot;
+msg.innerText="New round started"
 
 }
 
-function startHand(){
+function render(){
 
-makeDeck();
+chipsEl.innerText="$"+chips
+potEl.innerText="$"+pot
+highEl.innerText="$"+high
 
-community=[];
-pot=0;
+let pdiv=document.getElementById("players")
+pdiv.innerHTML=""
 
-for(let p of players){
+players.forEach(p=>{
 
-p.hand=[];
-p.bet=0;
-p.fold=false;
+let cards=p.hand.map(c=>cardHTML(c)).join("")
 
-deal(p);
-deal(p);
+pdiv.innerHTML+=`
+<div class="player">
+${p.name}: ${cards}
+${p.fold?"(folded)":""}
+</div>
+`
+})
 
-}
-
-dealer.hand=[];
-deal(dealer);
-deal(dealer);
-
-phase="betting";
-
-updateUI();
-
-status.innerText="Your turn";
-
-bet-buttons.style.display="block";
+let cdiv=document.getElementById("community")
+cdiv.innerHTML=community.map(c=>cardHTML(c)).join("")
 
 }
 
-function playerBet(amount){
+function bet(amount){
 
-let p=players[0];
+if(chips<amount)return
 
-if(amount>p.chips) amount=p.chips;
+chips-=amount
+pot+=amount
 
-p.chips-=amount;
-p.bet+=amount;
-pot+=amount;
+document.getElementById("dealSound").play()
 
-bet-buttons.style.display="none";
+aiTurn()
 
-updateUI();
-
-botTurn();
+render()
 
 }
 
-function playerFold(){
+function call(){
 
-players[0].fold=true;
-
-status.innerText="You folded";
-
-bet-buttons.style.display="none";
-
-botTurn();
+bet(50)
 
 }
 
-async function botTurn(){
+function fold(){
 
-for(let i=1;i<players.length;i++){
+players[0].fold=true
+msg.innerText="You folded"
 
-let b=players[i];
+endRound()
 
-if(b.fold) continue;
+}
 
-await sleep(600);
+function aiTurn(){
 
-if(Math.random()<0.7){
+players.slice(1).forEach(p=>{
 
-let bet=Math.min(10,b.chips);
+if(p.fold)return
 
-b.chips-=bet;
-b.bet+=bet;
-pot+=bet;
+let chance=Math.random()
 
-document.getElementById(b.name+"-status").innerText="Call";
+if(difficulty=="easy") chance+=.2
+if(difficulty=="shark") chance-=.2
+
+if(chance>.7){
+
+pot+=50
+msg.innerText+=` ${p.name} bets.`
+
+}else if(chance<.2){
+
+p.fold=true
+msg.innerText+=` ${p.name} folds.`
+
+}
+
+})
+
+}
+
+function nextRound(){
+
+if(community.length<5){
+
+community.push(draw())
+render()
 
 }else{
 
-b.fold=true;
-
-document.getElementById(b.name+"-status").innerText="Fold";
+endRound()
 
 }
 
-updateUI();
+}
+
+function score(hand){
+
+let values=hand.map(c=>ranks.indexOf(c.r))
+
+return Math.max(...values)
 
 }
 
-nextPhase();
+function endRound(){
 
+let best=-1
+let winner=null
+
+players.forEach(p=>{
+
+if(p.fold)return
+
+let s=score([...p.hand,...community])
+
+if(s>best){
+best=s
+winner=p
 }
 
-function nextPhase(){
+})
 
-if(phase==="betting"){
+if(winner.name=="You"){
 
-community.push(deck.pop());
-community.push(deck.pop());
-community.push(deck.pop());
-
-phase="turn";
-
-}else if(phase==="turn"){
-
-community.push(deck.pop());
-
-phase="river";
-
-}else if(phase==="river"){
-
-community.push(deck.pop());
-
-phase="showdown";
+chips+=pot
+document.getElementById("winSound").play()
+msg.innerText="You win $"+pot
 
 }else{
 
-showdown();
-return;
+msg.innerText=winner.name+" wins"
 
 }
 
-updateUI();
+pot=0
 
-status.innerText="Next betting round";
+if(chips>high){
+high=chips
+localStorage.setItem("pokerHigh",high)
+}
 
-bet-buttons.style.display="block";
+render()
 
 }
 
-function showdown(){
+function toggleHelp(){
 
-let best=null;
-let bestRank=0;
+let h=document.getElementById("help")
 
-for(let p of players){
-
-if(p.fold) continue;
-
-let score=evaluate([...p.hand,...community]);
-
-if(score.rank>bestRank){
-
-bestRank=score.rank;
-best=p;
+h.style.display=h.style.display=="block"?"none":"block"
 
 }
 
-}
+function toggleMusic(){
 
-if(best){
+let m=document.getElementById("music")
 
-best.chips+=pot;
-
-status.innerText=best.name+" wins $"+pot;
-
-}
-
-updateUI();
+if(m.paused) m.play()
+else m.pause()
 
 }
 
-function evaluate(cards){
+window.onload=()=>{
 
-let vals=cards.map(c=>c.value);
+let saved=localStorage.getItem("pokerHigh")
+if(saved) high=parseInt(saved)
 
-let counts={};
-
-for(let v of vals)
-counts[v]=(counts[v]||0)+1;
-
-let arr=Object.values(counts).sort((a,b)=>b-a);
-
-if(arr[0]===4) return{rank:8};
-if(arr[0]===3&&arr[1]===2)return{rank:7};
-if(arr[0]===3)return{rank:4};
-if(arr[0]===2&&arr[1]===2)return{rank:3};
-if(arr[0]===2)return{rank:2};
-
-return{rank:1};
+start()
 
 }
-
-start-btn.onclick=startHand;
 
 </script>
 
