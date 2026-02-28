@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>Dave Poker - Multiplayer with Hand Evaluation</title>
+<title>Dave Poker</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
@@ -21,12 +21,18 @@ body { font-family: 'Inter', sans-serif; background-color: var(--dark-bg); color
 .suit-center { font-size: 1.4rem; text-align: center; width: 100%; flex-grow: 1; display: flex; align-items: center; justify-content: center; }
 .rank-bottom { font-size: 0.75rem; text-align: center; width: 100%; line-height: 1; margin-bottom: 2px; transform: rotate(180deg); }
 button { cursor: pointer; }
+
+@keyframes dealCardAnim {
+  0% { transform: translateY(-300px) rotate(25deg); opacity: 0; }
+  100% { transform: translateY(0) rotate(0); opacity: 1; }
+}
+.new-card { animation: dealCardAnim 0.4s ease-out; }
 </style>
 </head>
 <body>
 
 <div id="game-container">
-<h1 class="text-3xl font-bold text-center text-yellow-400 mb-4">DAVE POKER - Multiplayer with Hand Eval</h1>
+<h1 class="text-4xl font-bold text-center text-yellow-400 mb-4">DAVE POKER</h1>
 
 <!-- Players area -->
 <div id="players-area" class="flex flex-col gap-4">
@@ -68,7 +74,7 @@ button { cursor: pointer; }
 
 <!-- Controls -->
 <div class="mt-4 flex flex-col items-center gap-2">
-<button id="start-btn" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-bold">Start Hand</button>
+<button id="start-btn" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-bold transition">Start Hand</button>
 <div id="bet-controls" class="flex gap-2 hidden">
 <button id="bet-10" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">Bet $10</button>
 <button id="bet-50" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">Bet $50</button>
@@ -88,7 +94,6 @@ button { cursor: pointer; }
 // Setup
 const SUITS = ['♥', '♦', '♣', '♠'];
 const RANKS = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
-
 let deck = [];
 let players = [
   { name: 'You', chips: 2000, hand: [], bet: 0, status: 'waiting' },
@@ -156,12 +161,12 @@ function updateChipsUI() {
   }
 }
 
-// Card creation
+// Card display
 function createCardEl(card, faceUp=true) {
   const slot = document.createElement('div');
   slot.className = `card-slot ${faceUp?'':'flipped'}`;
   slot.innerHTML = `
-    <div class="card-inner">
+    <div class="card-inner ${faceUp?'new-card':''}">
       <div class="card-back"></div>
       <div class="card-front ${card.suit==='♥'||card.suit==='♦'?'card-red':''}">
         <div class="rank-top">${card.rank}</div>
@@ -171,6 +176,7 @@ function createCardEl(card, faceUp=true) {
     </div>`;
   return slot;
 }
+
 // Show hand
 function showHand(player, containerId, hideFirst=false) {
   const container=document.getElementById(containerId);
@@ -178,7 +184,8 @@ function showHand(player, containerId, hideFirst=false) {
   player.hand.forEach((card,i)=>{
     let faceUp=true;
     if (hideFirst && i===0 && player===dealer) faceUp=false;
-    container.appendChild(createCardEl(card,faceUp));
+    const el=createCardEl(card,faceUp);
+    container.appendChild(el);
   });
 }
 
@@ -195,17 +202,19 @@ function startHand() {
   showHand(players[1],'bot1-hand');
   showHand(players[2],'bot2-hand');
   showHand(dealer,'dealer-hand',true);
+  // Reset statuses
   document.getElementById('player-status').textContent='';
   document.getElementById('bot1-status').textContent='';
   document.getElementById('bot2-status').textContent='';
   document.getElementById('dealer-status').textContent='';
-  for (let p of players) { p.bet=0; }
+  for (let p of players) { p.bet=0; p.status='waiting'; }
   updateBetsUI();
+  // Start betting pre-flop
   currentPlayerIndex=0;
   proceedBetting();
 }
 
-// Betting phase
+// Betting sequence
 async function proceedBetting() {
   if (currentPlayerIndex >= players.length) {
     moveToNextPhase();
@@ -226,7 +235,7 @@ async function proceedBetting() {
     document.getElementById('next-btn').classList.add('hidden');
     document.getElementById('player-status').textContent='Your turn!';
   } else {
-    await sleep(1000);
+    await sleep(800);
     let decision = botDecision(p);
     if (decision==='call') {
       placeBet(10);
@@ -240,7 +249,7 @@ async function proceedBetting() {
   }
 }
 
-// Player act
+// Player action
 function placeBet(amount) {
   let p=players[currentPlayerIndex];
   if (amount > p.chips) amount=p.chips;
@@ -249,7 +258,7 @@ function placeBet(amount) {
   updateBetsUI();
 }
 
-// Bot logic
+// Bot decision
 function botDecision(bot) {
   if (bot.chips > 50 && Math.random() > 0.3) {
     return 'call';
@@ -258,7 +267,7 @@ function botDecision(bot) {
   }
 }
 
-// Next phase
+// Move to next phase
 async function moveToNextPhase() {
   // Collect bets
   let totalBet=0;
@@ -298,9 +307,10 @@ async function moveToNextPhase() {
 
 // Show community cards
 function showCommunityCards() {
-  document.getElementById('community-cards').innerHTML='';
+  const container=document.getElementById('community-cards');
+  container.innerHTML='';
   for (let c of communityCards) {
-    document.getElementById('community-cards').appendChild(createCardEl(c));
+    container.appendChild(createCardEl(c));
   }
 }
 
@@ -310,7 +320,7 @@ function startBettingRound() {
   proceedBetting();
 }
 
-// Player action
+// Player actions
 async function proceedBetting() {
   if (currentPlayerIndex>=players.length) {
     moveToNextPhase();
@@ -331,7 +341,7 @@ async function proceedBetting() {
     document.getElementById('next-btn').classList.add('hidden');
     document.getElementById('player-status').textContent='Your turn!';
   } else {
-    await sleep(1000);
+    await sleep(800);
     let decision=botDecision(p);
     if (decision==='call') {
       placeBet(10);
@@ -345,26 +355,15 @@ async function proceedBetting() {
   }
 }
 
-// Player buttons
+// Buttons for player
+document.getElementById('start-btn').onclick=()=>{ startHand(); document.getElementById('start-btn').classList.add('hidden'); };
 document.getElementById('bet-10').onclick=()=>{ placeBet(10); currentPlayerIndex++; proceedBetting(); };
 document.getElementById('bet-50').onclick=()=>{ placeBet(50); currentPlayerIndex++; proceedBetting(); };
 document.getElementById('bet-all').onclick=()=>{ placeBet(players[0].chips); currentPlayerIndex++; proceedBetting(); };
 
-document.getElementById('call-btn').onclick=()=> {
-  placeBet(10);
-  document.getElementById('player-status').textContent='Called $10';
-  finalizePlayerAction();
-};
-document.getElementById('raise-btn').onclick=()=> {
-  placeBet(20);
-  document.getElementById('player-status').textContent='Raised $20';
-  finalizePlayerAction();
-};
-document.getElementById('fold-btn').onclick=()=> {
-  players[0].status='fold';
-  document.getElementById('player-status').textContent='Folded';
-  finalizePlayerAction();
-};
+document.getElementById('call-btn').onclick=()=> { placeBet(10); finalizePlayerAction(); };
+document.getElementById('raise-btn').onclick=()=> { placeBet(20); finalizePlayerAction(); };
+document.getElementById('fold-btn').onclick=()=> { players[0].status='fold'; finalizePlayerAction(); };
 
 function finalizePlayerAction() {
   document.getElementById('bet-controls').classList.add('hidden');
@@ -373,7 +372,6 @@ function finalizePlayerAction() {
   document.getElementById('fold-btn').classList.add('hidden');
   document.getElementById('next-btn').classList.remove('hidden');
   currentPlayerIndex++;
-  proceedBetting();
 }
 
 // Determine winner
@@ -398,71 +396,47 @@ function determineWinner() {
   document.getElementById('start-btn').classList.remove('hidden');
 }
 
-// Hand evaluation functions
+// Hand evaluation
 function evaluateHand(cards) {
-  // Convert to numeric values
   const vals = cards.map(c => c.value);
   const suits = cards.map(c => c.suit);
   vals.sort((a,b)=>b-a);
-
   const isFlush = suits.every(s=>s===suits[0]);
-
-  // Check straight
   let isStraight=true;
   for (let i=0; i<vals.length-1; i++) {
     if (vals[i] !== vals[i+1]+1) isStraight=false;
   }
-  // Special case: A-2-3-4-5
+  // Ace-low straight
   if (!isStraight && vals.includes(14)) {
-    // Replace Ace high with Ace low
     const lowVals=vals.slice();
     const aceIndex=lowVals.indexOf(14);
     lowVals[aceIndex]=1;
     lowVals.sort((a,b)=>b-a);
-    // Check straight with Ace low
     let straight=true;
     for (let i=0; i<lowVals.length-1; i++) {
       if (lowVals[i] !== lowVals[i+1]+1) straight=false;
     }
     if (straight) {
-      // Consider Ace low straight
-      // treat Ace as 1 for ranking
       vals[aceIndex]=1;
       vals.sort((a,b)=>b-a);
       isStraight=true;
     }
   }
-
-  // Count duplicates
   const counts={};
   for (let v of vals) { counts[v]= (counts[v]||0)+1; }
   const countValues=Object.values(counts).sort((a,b)=>b-a);
-
-  // Determine hand rank
-  if (isStraight && isFlush && vals[0]===14) {
-    return {rank:10, name:'Royal Flush'};
-  } else if (isStraight && isFlush) {
-    return {rank:9, name:'Straight Flush'};
-  } else if (countValues[0]===4) {
-    return {rank:8, name:'Four of a Kind'};
-  } else if (countValues[0]===3 && countValues[1]===2) {
-    return {rank:7, name:'Full House'};
-  } else if (isFlush) {
-    return {rank:6, name:'Flush'};
-  } else if (isStraight) {
-    return {rank:5, name:'Straight'};
-  } else if (countValues[0]===3) {
-    return {rank:4, name:'Three of a Kind'};
-  } else if (countValues[0]===2 && countValues[1]===2) {
-    return {rank:3, name:'Two Pair'};
-  } else if (countValues[0]===2) {
-    return {rank:2, name:'One Pair'};
-  } else {
-    return {rank:1, name:'High Card'};
-  }
+  if (isStraight && isFlush && vals[0]===14) return {rank:10, name:'Royal Flush'};
+  if (isStraight && isFlush) return {rank:9, name:'Straight Flush'};
+  if (countValues[0]===4) return {rank:8, name:'Four of a Kind'};
+  if (countValues[0]===3 && countValues[1]===2) return {rank:7, name:'Full House'};
+  if (isFlush) return {rank:6, name:'Flush'};
+  if (isStraight) return {rank:5, name:'Straight'};
+  if (countValues[0]===3) return {rank:4, name:'Three of a Kind'};
+  if (countValues[0]===2 && countValues[1]===2) return {rank:3, name:'Two Pair'};
+  if (countValues[0]===2) return {rank:2, name:'One Pair'};
+  return {rank:1, name:'High Card'};
 }
 
-// Helper for combinations
 function getCombinations(array, size) {
   const results = [];
   function helper(start, combo) {
@@ -480,49 +454,22 @@ function getCombinations(array, size) {
   return results;
 }
 
-// UI controls
-document.getElementById('start-btn').onclick=()=>{ startHand(); document.getElementById('start-btn').classList.add('hidden'); };
-document.getElementById('bet-10').onclick=()=>{ placeBet(10); currentPlayerIndex++; proceedBetting(); };
-document.getElementById('bet-50').onclick=()=>{ placeBet(50); currentPlayerIndex++; proceedBetting(); };
-document.getElementById('bet-all').onclick=()=>{ placeBet(players[0].chips); currentPlayerIndex++; proceedBetting(); };
+// Animation helper
+function sleep(ms) { return new Promise(res => setTimeout(res, ms)); }
 
-document.getElementById('call-btn').onclick=()=> {
-  placeBet(10);
-  document.getElementById('player-status').textContent='Called $10';
-  finalizePlayerAction();
-};
-document.getElementById('raise-btn').onclick=()=> {
-  placeBet(20);
-  document.getElementById('player-status').textContent='Raised $20';
-  finalizePlayerAction();
-};
-document.getElementById('fold-btn').onclick=()=> {
-  players[0].status='fold';
-  document.getElementById('player-status').textContent='Folded';
-  finalizePlayerAction();
-};
-
-function finalizePlayerAction() {
-  document.getElementById('bet-controls').classList.add('hidden');
-  document.getElementById('call-btn').classList.add('hidden');
-  document.getElementById('raise-btn').classList.add('hidden');
-  document.getElementById('fold-btn').classList.add('hidden');
-  document.getElementById('next-btn').classList.remove('hidden');
-  currentPlayerIndex++;
-}
-
-// Initialize game
+// Start game
 let gameStarted=false;
 startHand();
 
 </script>
+
 <!-- Help menu -->
 <div style="position:fixed; bottom:10px; right:10px; background:#444; padding:10px; border-radius:8px; max-width:300px;">
 <button style="background:#888; color:#fff; padding:5px 10px; border:none; border-radius:4px;" onclick="toggleHelp()">Help & Info</button>
 <div id="help-text" style="display:none; margin-top:10px; color:#fff; font-size:14px;">
 <h3 style="margin-top:0;">Hand Evaluation Explanation</h3>
 <ul>
-<li><b>Royal Flush:</b> A, K, Q, J, 10 of the same suit (highest possible hand)</li>
+<li><b>Royal Flush:</b> A, K, Q, J, 10 of the same suit (highest hand)</li>
 <li><b>Straight Flush:</b> Five consecutive cards of the same suit</li>
 <li><b>Four of a Kind:</b> Four cards of the same rank</li>
 <li><b>Full House:</b> Three of a kind plus a pair</li>
