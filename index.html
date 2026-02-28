@@ -2,22 +2,18 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Black Dave's Horse Racing</title>
-<!-- Tailwind for utility styles -->
+<!-- Tailwind CDN -->
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-
   body {
     font-family: 'Inter', sans-serif;
     background-color: #1a202c;
     color: #e2e8f0;
-    overflow-x: hidden;
     margin: 0;
     padding: 0;
   }
-
   a.back-hub {
     position: absolute;
     top: 20px;
@@ -29,31 +25,24 @@
     font-weight: bold;
     border: 1px solid #ffd700;
     z-index: 9999;
-    transition: 0.3s;
   }
   a.back-hub:hover {
     background: #ffd700;
     color: #000;
-    box-shadow: 0 0 10px #ffd700;
   }
-
   #game-container {
     max-width: 800px;
     margin: 80px auto 20px auto;
     position: relative;
   }
-
-  /* Smaller Canvas */
   #raceTrack {
     background: #2d3748;
     border: 8px solid #3e2723;
     border-radius: 20px;
     box-shadow: 0 10px 20px rgba(0,0,0,0.8);
     width: 100%;
-    height: 250px; /* Reduced height for less stretch */
+    height: 180px; /* smaller height for compact display */
   }
-
-  /* Overlay styling */
   #resultOverlay {
     position: absolute;
     top: 50%; left: 50%;
@@ -68,21 +57,10 @@
     z-index: 100;
     box-shadow: 0 0 50px rgba(0,0,0,1);
   }
-
-  #resultTitle {
-    font-size: 28px; margin-bottom: 10px; text-transform: uppercase;
-  }
-  #resultMessage {
-    font-size: 18px; margin-bottom: 20px;
-  }
-  .win-text {
-    color: #ffd700; text-shadow: 0 0 10px #ffd700;
-  }
-  .lose-text {
-    color: #ff4444;
-  }
-
-  /* Betting panel style */
+  #resultTitle { font-size: 28px; margin-bottom: 10px; text-transform: uppercase; }
+  #resultMessage { font-size: 18px; margin-bottom: 20px; }
+  .win-text { color: #ffd700; text-shadow: 0 0 10px #ffd700; }
+  .lose-text { color: #ff4444; }
   #betPanel {
     background: rgba(0,0,0,0.9);
     border: 2px solid #ffd700;
@@ -95,36 +73,7 @@
     align-items: center;
     gap: 15px;
   }
-
-  /* Bet slider styles */
-  #betSliderContainer {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-  #betAmountDisplay {
-    font-size: 24px;
-    font-weight: bold;
-    color: #ffd700;
-    margin-bottom: 10px;
-  }
-  #betSlider {
-    width: 80%;
-  }
-
-  /* Controls */
-  #horseSelect {
-    padding: 12px;
-    border-radius: 8px;
-    font-weight: bold;
-    outline: none;
-    cursor: pointer;
-    background: #fff;
-    width: 100%;
-    max-width: 200px;
-  }
-
+  #betSlider { width: 80%; }
   #placeBetBtn {
     background: linear-gradient(#ffd700, #b8860b);
     color: #000;
@@ -137,13 +86,6 @@
     max-width: 200px;
     font-size: 16px;
   }
-  #placeBetBtn:disabled {
-    background: #555;
-    color: #888;
-    cursor: not-allowed;
-  }
-
-  /* Reset button */
   #resetBtn {
     margin-top: 10px;
     padding: 10px 20px;
@@ -158,15 +100,11 @@
     background: #ffd700;
     color: #000;
   }
-
-  /* Tip */
   .tip {
     margin-top: 10px;
-    color: #aaa;
     font-size: 12px;
+    color: #aaa;
   }
-
-  /* Highscore */
   #highscoreBox {
     margin-top: 20px;
     font-size: 24px;
@@ -190,17 +128,14 @@
 
 <h1 class="text-4xl font-black text-center text-yellow-400 mt-20 mb-4">BLACK DAVE HORSE RACING</h1>
 
-<!-- Highscore -->
 <div id="highscoreBox">Highscore: 0</div>
-
-<!-- Reset -->
 <div style="margin-top:10px; display:flex; justify-content:center;">
   <button id="resetBtn">Reset Game</button>
 </div>
 
-<!-- Canvas -->
+<!-- Canvas container -->
 <div id="canvasContainer" style="position:relative; margin-top:20px;">
-  <canvas id="raceTrack" width="800" height="250"></canvas>
+  <canvas id="raceTrack" width="800" height="180"></canvas>
   <!-- Result overlay -->
   <div id="resultOverlay" class="flex items-center justify-center">
     <div class="text-center">
@@ -211,14 +146,12 @@
   </div>
 </div>
 
-<!-- Bet Panel -->
+<!-- Bet controls -->
 <div id="betPanel">
   <div class="flex flex-col items-center w-full mb-4">
     <div class="text-3xl font-extrabold text-yellow-300 mb-2">BET AMOUNT</div>
     <div id="betAmountDisplay">$10</div>
-    <div id="betSliderContainer">
-      <input type="range" id="betSlider" min="1" max="1000" value="10" />
-    </div>
+    <input type="range" id="betSlider" min="1" max="1000" value="10" />
   </div>
   <div class="flex flex-col items-center w-full mb-4">
     <div class="mb-2">Select Horse:</div>
@@ -253,7 +186,7 @@ const horseSelect = document.getElementById('horseSelect');
 const placeBetBtn = document.getElementById('placeBetBtn');
 
 let balance = 2000;
-let highscore = localStorage.getItem('blackjackHighScore') || 0;
+let highscore = localStorage.getItem('highscore') || 0;
 highscore = parseInt(highscore);
 if (isNaN(highscore)) highscore = 0;
 highscoreBox.innerText = 'Highscore: ' + highscore;
@@ -262,7 +195,7 @@ let racing = false;
 let overlayVisible = false;
 let startTime = null;
 let canBet = true;
-const raceDuration = 12000;
+const raceDuration = 10000; // shorter for faster races
 
 const horseData = [
   { id: 0, color: '#ff4444', label: '1' },
@@ -280,37 +213,36 @@ function initHorses() {
     ...h,
     angle: 1.5 * Math.PI,
     rx: 300 + (i * 30),
-    ry: 120 + (i * 25),
+    ry: 60 + (i * 20),
     phaseShift: Math.random() * 10,
-    speedMult: 0.985 + (Math.random() * 0.035)
+    speedMult: 0.985 + (Math.random() * 0.03)
   }));
 }
 initHorses();
 
-// Draw track
 function drawTrack() {
   ctx.fillStyle = "#5d4037";
   ctx.beginPath();
-  ctx.ellipse(400, 125, 350, 125, 0, 0, Math.PI * 2);
+  ctx.ellipse(400, 90, 350, 90, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.strokeStyle = "rgba(255,255,255,0.1)";
   ctx.lineWidth = 2;
   for (let i=0; i<4; i++) {
     ctx.beginPath();
-    ctx.ellipse(400, 125, 250 + i*20, 80 + i*10, 0, 0, Math.PI * 2);
+    ctx.ellipse(400, 90, 250 + i*20, 80 + i*10, 0, 0, Math.PI * 2);
     ctx.stroke();
   }
   ctx.strokeStyle = "#fff";
   ctx.lineWidth = 8;
   ctx.beginPath();
   ctx.moveTo(400, 5);
-  ctx.lineTo(400, 120);
+  ctx.lineTo(400, 130);
   ctx.stroke();
 }
 
 function drawHorse(h) {
   const x = 400 + Math.cos(h.angle) * h.rx;
-  const y = 125 + Math.sin(h.angle) * h.ry;
+  const y = 90 + Math.sin(h.angle) * h.ry;
   ctx.save();
   ctx.translate(x, y);
   ctx.rotate(h.angle + Math.PI/2);
@@ -326,7 +258,7 @@ function drawHorse(h) {
 }
 
 function render() {
-  ctx.clearRect(0, 0, 800, 250);
+  ctx.clearRect(0, 0, 800, 180);
   drawTrack();
   horses.forEach(drawHorse);
 }
@@ -369,7 +301,7 @@ function finishRace() {
     resultMessage.innerText = `Horse #${winner.label} took the gold! You win $${payout}!`;
     if (balance > highscore) {
       highscore = balance;
-      localStorage.setItem('blackjackHighScore', highscore);
+      localStorage.setItem('highscore', highscore);
       highscoreBox.innerText = 'Highscore: ' + highscore;
     }
   } else {
@@ -377,13 +309,11 @@ function finishRace() {
     resultTitle.className = "lose-text";
     resultMessage.innerText = `Horse #${winner.label} won the race. Better luck next time!`;
   }
-
   document.querySelector('#balanceSpan').innerText = balance;
 
   setTimeout(() => {
     document.getElementById('resultOverlay').style.display = 'flex';
     overlayVisible = true;
-    // Reset betting state
     canBet = true;
     startBtn.disabled = false;
     horseSelect.disabled = false;
@@ -399,22 +329,14 @@ function closeOverlay() {
   startTime = null;
   initHorses();
   render();
-  // Re-enable betting
   canBet = true;
 }
 
-// Handle bet action
 function handleBet() {
   if (racing || !canBet || overlayVisible) return;
   const betAmt = parseInt(betSlider.value);
-  if (isNaN(betAmt) || betAmt < 1) {
-    alert("Invalid bet amount");
-    return;
-  }
-  if (balance < betAmt) {
-    alert("Out of cash!");
-    return;
-  }
+  if (isNaN(betAmt) || betAmt < 1) { alert("Invalid bet"); return; }
+  if (balance < betAmt) { alert("Out of cash!"); return; }
   balance -= betAmt;
   currentBet = betAmt;
   document.querySelector('#balanceSpan').innerText = balance;
@@ -425,43 +347,41 @@ function handleBet() {
   requestAnimationFrame(animate);
 }
 
-// Button bindings
+// Bind buttons
 document.getElementById('placeBetBtn').onclick = handleBet;
 document.getElementById('continueBtn').onclick = () => { closeOverlay(); };
 document.getElementById('resetBtn').onclick = () => {
   balance = 2000;
-  localStorage.setItem('blackjackHighScore', 0);
+  localStorage.setItem('highscore', 0);
   highscore = 0;
   highscoreBox.innerText = 'Highscore: ' + highscore;
   document.querySelector('#balanceSpan').innerText = balance;
   initHorses();
   render();
-  document.getElementById('resultOverlay').style.display = 'none';
+  document.getElementById('resultOverlay').style.display='none';
   overlayVisible = false;
   racing = false;
   canBet = true;
 };
 
-// Keyboard controls
+// Spacebar
 window.addEventListener('keydown', (e) => {
   if (e.code === 'Space') {
     e.preventDefault();
-    if (overlayVisible) {
-      closeOverlay();
-    } else {
-      handleBet();
-    }
+    if (overlayVisible) { closeOverlay(); } else { handleBet(); }
   }
 });
 
-// Slider update
-betSlider.oninput = () => {
-  betAmountDisplay.innerText = '$' + betSlider.value;
+// Slider
+const slider = document.getElementById('betSlider');
+const amountDisplay = document.getElementById('betAmountDisplay');
+slider.oninput = () => {
+  amountDisplay.innerText = '$' + slider.value;
 };
-betSlider.value = 10;
-betAmountDisplay.innerText = '$10';
+slider.value = 10;
+amountDisplay.innerText = '$10';
 
-// Initialize display
+// Render initial
 render();
 </script>
 </body>
