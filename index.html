@@ -14,6 +14,8 @@
     background-color: #1a202c;
     color: #e2e8f0;
     overflow-x: hidden;
+    margin: 0;
+    padding: 0;
   }
 
   a.back-hub {
@@ -36,19 +38,19 @@
   }
 
   #game-container {
-    max-width: 1000px;
+    max-width: 800px;
     margin: 80px auto 20px auto;
     position: relative;
   }
 
-  /* Canvas styling */
+  /* Smaller Canvas */
   #raceTrack {
     background: #2d3748;
     border: 8px solid #3e2723;
-    border-radius: 40px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+    border-radius: 20px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.8);
     width: 100%;
-    height: 500px;
+    height: 250px; /* Reduced height for less stretch */
   }
 
   /* Overlay styling */
@@ -94,7 +96,7 @@
     gap: 15px;
   }
 
-  /* Bet amount slider styles */
+  /* Bet slider styles */
   #betSliderContainer {
     width: 100%;
     display: flex;
@@ -111,8 +113,8 @@
     width: 80%;
   }
 
-  /* Other controls styling */
- #horseSelect {
+  /* Controls */
+  #horseSelect {
     padding: 12px;
     border-radius: 8px;
     font-weight: bold;
@@ -141,7 +143,7 @@
     cursor: not-allowed;
   }
 
-  /* Reset button style */
+  /* Reset button */
   #resetBtn {
     margin-top: 10px;
     padding: 10px 20px;
@@ -157,14 +159,14 @@
     color: #000;
   }
 
-  /* Tip text style */
+  /* Tip */
   .tip {
     margin-top: 10px;
     color: #aaa;
     font-size: 12px;
   }
 
-  /* Highscore box style */
+  /* Highscore */
   #highscoreBox {
     margin-top: 20px;
     font-size: 24px;
@@ -188,17 +190,17 @@
 
 <h1 class="text-4xl font-black text-center text-yellow-400 mt-20 mb-4">BLACK DAVE HORSE RACING</h1>
 
-<!-- Highscore display -->
+<!-- Highscore -->
 <div id="highscoreBox">Highscore: 0</div>
 
-<!-- Reset button -->
+<!-- Reset -->
 <div style="margin-top:10px; display:flex; justify-content:center;">
   <button id="resetBtn">Reset Game</button>
 </div>
 
-<!-- Canvas container -->
+<!-- Canvas -->
 <div id="canvasContainer" style="position:relative; margin-top:20px;">
-  <canvas id="raceTrack" width="1000" height="500"></canvas>
+  <canvas id="raceTrack" width="800" height="250"></canvas>
   <!-- Result overlay -->
   <div id="resultOverlay" class="flex items-center justify-center">
     <div class="text-center">
@@ -209,16 +211,16 @@
   </div>
 </div>
 
-<!-- Betting controls -->
+<!-- Bet Panel -->
 <div id="betPanel">
-  <div class="flex flex-col items-center w-full">
-    <div class="text-3xl font-extrabold text-yellow-300 mb-4">BET AMOUNT</div>
+  <div class="flex flex-col items-center w-full mb-4">
+    <div class="text-3xl font-extrabold text-yellow-300 mb-2">BET AMOUNT</div>
     <div id="betAmountDisplay">$10</div>
     <div id="betSliderContainer">
       <input type="range" id="betSlider" min="1" max="1000" value="10" />
     </div>
   </div>
-  <div class="flex flex-col items-center w-full mt-4">
+  <div class="flex flex-col items-center w-full mb-4">
     <div class="mb-2">Select Horse:</div>
     <select id="horseSelect">
       <option value="0">#1 Red Rocket</option>
@@ -228,7 +230,7 @@
       <option value="4">#5 Purple Power</option>
     </select>
   </div>
-  <div class="flex justify-center mt-4 w-full">
+  <div class="flex justify-center w-full mb-4">
     <button id="placeBetBtn">PLACE BET</button>
   </div>
   <div class="tip text-center mt-2">Tip: Use slider to select bet amount. Press SPACE to Bet/Confirm.</div>
@@ -289,29 +291,29 @@ initHorses();
 function drawTrack() {
   ctx.fillStyle = "#5d4037";
   ctx.beginPath();
-  ctx.ellipse(500, 250, 450, 250, 0, 0, Math.PI * 2);
+  ctx.ellipse(400, 125, 350, 125, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.strokeStyle = "rgba(255,255,255,0.1)";
   ctx.lineWidth = 2;
-  for (let i = 0; i < 6; i++) {
+  for (let i=0; i<4; i++) {
     ctx.beginPath();
-    ctx.ellipse(500, 250, 285 + i * 30, 108 + i * 25, 0, 0, Math.PI * 2);
+    ctx.ellipse(400, 125, 250 + i*20, 80 + i*10, 0, 0, Math.PI * 2);
     ctx.stroke();
   }
   ctx.strokeStyle = "#fff";
   ctx.lineWidth = 8;
   ctx.beginPath();
-  ctx.moveTo(500, 15);
-  ctx.lineTo(500, 142);
+  ctx.moveTo(400, 5);
+  ctx.lineTo(400, 120);
   ctx.stroke();
 }
 
 function drawHorse(h) {
-  const x = 500 + Math.cos(h.angle) * h.rx;
-  const y = 250 + Math.sin(h.angle) * h.ry;
+  const x = 400 + Math.cos(h.angle) * h.rx;
+  const y = 125 + Math.sin(h.angle) * h.ry;
   ctx.save();
   ctx.translate(x, y);
-  ctx.rotate(h.angle + Math.PI / 2);
+  ctx.rotate(h.angle + Math.PI/2);
   ctx.fillStyle = h.color;
   ctx.beginPath();
   ctx.ellipse(0, 0, 14, 9, 0, 0, Math.PI * 2);
@@ -324,7 +326,7 @@ function drawHorse(h) {
 }
 
 function render() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.clearRect(0, 0, 800, 250);
   drawTrack();
   horses.forEach(drawHorse);
 }
@@ -332,18 +334,20 @@ function render() {
 function animate(timestamp) {
   if (!startTime) startTime = timestamp;
   const elapsed = timestamp - startTime;
-  const progress = Math.min(elapsed / raceDuration, 1);
+  const progress = Math.min(elapsed / raceDuration,1);
 
   horses.forEach(h => {
     if (progress < 1) {
-      const suspense = Math.sin(progress * 12 + h.phaseShift) * 0.012;
+      const suspense = Math.sin(progress*12 + h.phaseShift) * 0.012;
       const smoothProgress = Math.max(0, (progress * h.speedMult) + suspense);
       h.angle = (1.5 * Math.PI) + (smoothProgress * Math.PI * 2);
     } else {
       h.angle = (1.5 * Math.PI) + (h.speedMult * Math.PI * 2);
     }
   });
+
   render();
+
   if (progress < 1) {
     requestAnimationFrame(animate);
   } else {
@@ -373,6 +377,7 @@ function finishRace() {
     resultTitle.className = "lose-text";
     resultMessage.innerText = `Horse #${winner.label} won the race. Better luck next time!`;
   }
+
   document.querySelector('#balanceSpan').innerText = balance;
 
   setTimeout(() => {
@@ -398,13 +403,9 @@ function closeOverlay() {
   canBet = true;
 }
 
-// Handle Bet
+// Handle bet action
 function handleBet() {
-  if (racing || !canBet || overlayVisible) {
-    console.log('Bet rejected:', {racing, canBet, overlayVisible});
-    return;
-  }
-
+  if (racing || !canBet || overlayVisible) return;
   const betAmt = parseInt(betSlider.value);
   if (isNaN(betAmt) || betAmt < 1) {
     alert("Invalid bet amount");
@@ -417,21 +418,16 @@ function handleBet() {
   balance -= betAmt;
   currentBet = betAmt;
   document.querySelector('#balanceSpan').innerText = balance;
-
-  // Disable controls during race
   canBet = false;
   startBtn.disabled = true;
   horseSelect.disabled = true;
-
-  startTime = null; // Reset start time
+  startTime = null;
   requestAnimationFrame(animate);
 }
 
-// Button and event wiring
+// Button bindings
 document.getElementById('placeBetBtn').onclick = handleBet;
-document.getElementById('continueBtn').onclick = () => {
-  closeOverlay();
-};
+document.getElementById('continueBtn').onclick = () => { closeOverlay(); };
 document.getElementById('resetBtn').onclick = () => {
   balance = 2000;
   localStorage.setItem('blackjackHighScore', 0);
@@ -445,6 +441,8 @@ document.getElementById('resetBtn').onclick = () => {
   racing = false;
   canBet = true;
 };
+
+// Keyboard controls
 window.addEventListener('keydown', (e) => {
   if (e.code === 'Space') {
     e.preventDefault();
@@ -463,9 +461,8 @@ betSlider.oninput = () => {
 betSlider.value = 10;
 betAmountDisplay.innerText = '$10';
 
-// Initial render
+// Initialize display
 render();
-
 </script>
 </body>
 </html>
