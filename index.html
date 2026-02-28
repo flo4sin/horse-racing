@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Dave Coins - Idle Clicker Game</title>
+<title>Dave Coins - Cleaned Up</title>
 <style>
-/* ... [Same styles as before, with some adjustments for images] ... */
+/* Keep existing styles, removing image styles for clarity */
 body {
   background: linear-gradient(to right, #ffcc00, #ff6600);
   font-family: 'Arial', sans-serif;
@@ -14,111 +14,46 @@ body {
   color: #fff;
   overflow-x: hidden;
 }
-h1 {
-  font-size: 2em;
-  margin-bottom: 10px;
-}
+h1 { font-size: 2em; margin-bottom: 10px; }
 #dave {
-  width: 300px;
-  cursor: pointer;
-  border-radius: 20px;
-  border: 5px solid #fff;
-  box-shadow: 0 0 20px #fff;
-  transition: transform 0.1s;
-  margin-top: 10px;
+  width: 300px; cursor: pointer; border-radius: 20px; border: 5px solid #fff;
+  box-shadow: 0 0 20px #fff; transition: transform 0.1s; margin-top: 10px;
 }
-#dave:hover {
-  transform: scale(1.05);
-}
+#dave:hover { transform: scale(1.05); }
 #stats {
-  margin-top: 20px;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 15px;
+  margin-top: 20px; display: flex; flex-wrap: wrap; justify-content: center; gap: 15px;
 }
 #stats div {
-  background: rgba(255,255,255,0.2);
-  padding: 10px 15px;
-  border-radius: 10px;
-  min-width: 150px;
+  background: rgba(255,255,255,0.2); padding: 10px 15px; border-radius: 10px; min-width: 150px;
 }
 #progressBarContainer {
-  width: 80%;
-  max-width: 600px;
-  margin: 20px auto;
-  background: rgba(255,255,255,0.2);
-  border-radius: 10px;
-  height: 20px;
+  width: 80%; max-width: 600px; margin: 20px auto; background: rgba(255,255,255,0.2);
+  border-radius: 10px; height: 20px;
 }
 #progressBar {
-  height: 100%;
-  width: 0%;
-  background: #ffcc00;
-  border-radius: 10px;
-  transition: width 0.3s;
+  height: 100%; width: 0%; background: #ffcc00; border-radius: 10px; transition: width 0.3s;
 }
 #buildings {
-  margin-top: 20px;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
+  margin-top: 20px; display: flex; flex-wrap: wrap; justify-content: center;
 }
 .building {
-  background: rgba(255,255,255,0.2);
-  border-radius: 10px;
-  padding: 10px;
-  margin: 10px;
-  flex: 1 1 250px;
-  max-width: 350px;
-  box-shadow: inset 0 0 10px rgba(255,255,255,0.3);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  background: rgba(255,255,255,0.2); border-radius: 10px; padding: 10px; margin: 10px;
+  flex: 1 1 250px; max-width: 350px; box-shadow: inset 0 0 10px rgba(255,255,255,0.3);
+  display: flex; flex-direction: column; align-items: center;
 }
-.building h3 {
-  margin-top: 0;
-}
-.building img {
-  max-width: 150px;
-  margin: 10px 0;
-  border-radius: 8px;
-}
+.building h3 { margin-top: 0; }
 #achievements {
-  margin-top: 30px;
-  max-width: 700px;
-  margin-left: auto;
-  margin-right: auto;
-  padding: 10px;
-  background: rgba(255,255,255,0.1);
-  border-radius: 10px;
+  margin-top: 30px; max-width: 700px; margin-left: auto; margin-right: auto; padding: 10px;
+  background: rgba(255,255,255,0.1); border-radius: 10px;
 }
-.achievement {
-  padding: 8px;
-  margin: 4px 0;
-  border-radius: 5px;
-  transition: background 0.3s;
-}
-.achievement.locked {
-  opacity: 0.5;
-}
-.achievement.unlocked {
-  background: rgba(255,255,255,0.3);
-  font-weight: bold;
-}
+.achievement { padding: 8px; margin: 4px 0; border-radius: 5px; transition: background 0.3s; }
+.achievement.locked { opacity: 0.5; }
+.achievement.unlocked { background: rgba(255,255,255,0.3); font-weight: bold; }
 #notifications {
-  position: fixed;
-  top: 10px;
-  right: 10px;
-  max-width: 300px;
-  z-index: 999;
+  position: fixed; top: 10px; right: 10px; max-width: 300px; z-index: 999;
 }
 .notification {
-  background: rgba(255,255,255,0.2);
-  margin: 5px 0;
-  padding: 8px 12px;
-  border-radius: 8px;
-  font-size: 0.9em;
+  background: rgba(255,255,255,0.2); margin: 5px 0; padding: 8px 12px; border-radius: 8px; font-size: 0.9em;
   animation: fadeOut 3s forwards;
 }
 @keyframes fadeOut {
@@ -130,7 +65,7 @@ h1 {
 </head>
 <body>
 
-<h1>Dave Coins - Idle Clicker</h1>
+<h1>Dave Coins - Cleaned Up</h1>
 <img src="https://i.imgur.com/1UfrW92.png" id="dave" alt="Dave" />
 
 <div id="stats">
@@ -138,7 +73,7 @@ h1 {
   <div>Coins per Click: <span id="perClick">1</span></div>
   <div>Auto Coins/sec: <span id="autoCoins">0</span></div>
   <div>Prestige Multiplier: <span id="prestigeMultiplier">1</span></div>
-  <div>Bonus: <span id="bonusPercent">0</span>%</div>
+  <div>Farm Efficiency Bonus: <span id="farmBonus">0</span>%</div>
 </div>
 
 <div id="progressBarContainer">
@@ -156,12 +91,12 @@ h1 {
   <button id="clickUpgrade">Increase Click (+1) ($10)</button>
   <button id="autoUpgrade">Add Auto Coin (+1/sec) ($50)</button>
   <button id="prestigeBtn">Prestige (Reset & Gain Multiplier)</button>
+  <button id="seasonalEventBtn">Trigger Seasonal Event</button>
 </div>
 
 <h2>Achievements</h2>
 <div id="achievements"></div>
 
-<!-- Notifications -->
 <div id="notifications"></div>
 
 <script>
@@ -175,10 +110,13 @@ let data = JSON.parse(localStorage.getItem('daveCoinsData')) || {
   buildings: {
     farmer: { count: 0, cost: 10, baseCost: 10, rate: 1 },
     tractor: { count: 0, cost: 100, baseCost: 100, rate: 10 },
+    // Removed images, only UI
+    minecraft: { count: 0, cost: 1000, baseCost: 1000, rate: 50 },
   },
   achievements: {},
   clickCount: 0,
   totalClicks: 0,
+  seasonalEventActive: false,
 };
 
 // Achievements list
@@ -187,61 +125,59 @@ const achievementsList = [
   { id: 'buy_10_farmers', desc: 'Buy 10 Farmers', condition: () => (data.buildings.farmer.count >= 10) },
   { id: 'reach_1k', desc: 'Reach 1,000 Dave Coins', condition: () => (getTotalCoins() >= 1000) },
   { id: 'click_100', desc: 'Click 100 times', condition: () => (data.clickCount >= 100) },
+  { id: 'buy_10_minecraft', desc: 'Buy 10 Minecraft Tools', condition: () => (data.buildings.minecraft.count >= 10) },
 ];
 
-// Elements
 const moneySpan = document.getElementById('money');
 const perClickSpan = document.getElementById('perClick');
 const autoCoinsSpan = document.getElementById('autoCoins');
 const prestigeSpan = document.getElementById('prestigeMultiplier');
-const bonusSpan = document.getElementById('bonusPercent');
+const farmBonusSpan = document.getElementById('farmBonus');
 
 const dave = document.getElementById('dave');
 const btnClickUpgrade = document.getElementById('clickUpgrade');
 const btnAutoUpgrade = document.getElementById('autoUpgrade');
 const btnPrestige = document.getElementById('prestigeBtn');
+const btnSeasonal = document.getElementById('seasonalEventBtn');
 const buildingsDiv = document.querySelector('#buildings');
 
 const achievementsDiv = document.getElementById('achievements');
 const notificationsDiv = document.getElementById('notifications');
 
 const buildingTypes = [
-  { key: 'farmer', name: 'Amish Farmer', baseCost: 10, rate: 1, image: 'https://images.unsplash.com/photo-1602702266804-3d7d49f0cc02?ixlib=rb-4.0.4&auto=format&fit=crop&w=200&q=80' },
-  { key: 'tractor', name: 'Bright Orange Tractor', baseCost: 100, rate: 10, image: 'https://images.unsplash.com/photo-1606208555504-1d9513d2f89f?ixlib=rb-4.0.4&auto=format&fit=crop&w=200&q=80' },
+  { key: 'farmer', name: 'Amish Farmer', baseCost: 10, rate: 1 },
+  { key: 'tractor', name: 'Bright Orange Tractor', baseCost: 100, rate: 10 },
+  { key: 'minecraft', name: 'Minecraft Tools', baseCost: 1000, rate: 50 },
 ];
 
-// Save/load functions
+// Save/load
 function save() { localStorage.setItem('daveCoinsData', JSON.stringify(data)); }
 function load() { if (localStorage.getItem('daveCoinsData')) { data = JSON.parse(localStorage.getItem('daveCoinsData')); } }
 load();
 
-// Utility
 function getTotalCoins() {
   return data.money * data.prestigeMultiplier;
 }
 
-// Update display
 function update() {
   document.getElementById('money').innerText = getTotalCoins().toFixed(2);
   document.getElementById('perClick').innerText = data.coinsPerClick;
   document.getElementById('autoCoins').innerText = getTotalAutoIncome().toFixed(2);
   document.getElementById('prestigeMultiplier').innerText = data.prestigeMultiplier;
-  document.getElementById('bonusPercent').innerText = data.bonusPercent;
+  document.getElementById('farmBonus').innerText = data.bonusPercent;
+  document.getElementById('progressBar').style.width = Math.min(getTotalAutoIncome()/100*100, 100)+'%';
   updateBuildingsUI();
   updateAchievements();
 }
 
-// Clicking Dave
-dave.addEventListener('click', () => {
+dave.onclick = () => {
   data.money += data.coinsPerClick * data.prestigeMultiplier;
   animateCoins();
   data.clickCount++;
-  data.totalClicks++;
   checkAchievements();
   update();
-});
+};
 
-// Animate coins flying
 function animateCoins() {
   for (let i=0; i<10; i++) {
     const coin = document.createElement('div');
@@ -274,21 +210,17 @@ function animateCoins() {
   }
 }
 
-// Buy building
 function buyBuilding(bKey) {
-  const bConfig = buildingTypes.find(b => b.key === bKey);
-  const bData = data.buildings[bKey];
+  const b = buildingTypes.find(b => b.key === bKey);
+  const bData = data.buildings[b.key];
   if (data.money >= bData.cost) {
     data.money -= bData.cost;
     bData.count++;
     bData.cost = Math.round(bData.cost * 1.15);
     update();
-  } else {
-    alert('Not enough Dave Coins!');
-  }
+  } else alert('Not enough Dave Coins!');
 }
 
-// Buy max buildings
 function buyMaxBuildings() {
   for (const b of buildingTypes) {
     const bData = data.buildings[b.key];
@@ -298,7 +230,6 @@ function buyMaxBuildings() {
   }
 }
 
-// Update UI
 function updateBuildingsUI() {
   const container = document.querySelector('#buildings');
   container.innerHTML = '';
@@ -308,7 +239,6 @@ function updateBuildingsUI() {
     div.className = 'building';
     div.innerHTML = `
       <h3>${b.name}</h3>
-      <img src="${b.image}" alt="${b.name}">
       <div>Owned: ${bData.count}</div>
       <div>Cost: $${bData.cost}</div>
       <div>Produces: ${(bData.count * b.rate)} coins/sec</div>
@@ -318,16 +248,15 @@ function updateBuildingsUI() {
   }
 }
 
-// Calculate total auto income
 function getTotalAutoIncome() {
   let total = 0;
   for (const b of buildingTypes) {
     total += data.buildings[b.key].count * b.rate;
   }
+  total *= (1 + data.bonusPercent/100); // global boost
   return total * data.prestigeMultiplier;
 }
 
-// Check achievements
 function checkAchievements() {
   for (const ach of achievementsList) {
     if (!data.achievements[ach.id] && ach.condition()) {
@@ -337,7 +266,6 @@ function checkAchievements() {
   }
 }
 
-// Update achievements UI
 function updateAchievements() {
   achievementsDiv.innerHTML = '';
   for (const ach of achievementsList) {
@@ -348,15 +276,12 @@ function updateAchievements() {
   }
 }
 
-// Notifications
 function showNotification(text) {
   const notif = document.createElement('div');
   notif.className = 'notification';
   notif.innerText = text;
   notificationsDiv.appendChild(notif);
-  setTimeout(() => {
-    notif.remove();
-  }, 3000);
+  setTimeout(() => { notif.remove(); }, 3000);
 }
 
 // Event handlers
@@ -378,7 +303,6 @@ document.getElementById('prestigeBtn').onclick = () => {
   if (getTotalCoins() >= 1000) {
     const gainedMultiplier = Math.floor(getTotalCoins() / 1000);
     data.prestigeMultiplier += gainedMultiplier;
-    // Reset progress
     data.money = 0;
     data.coinsPerClick = 1;
     data.autoCoinsPerSec = 0;
@@ -401,8 +325,11 @@ document.getElementById('maxBuy').onclick = () => {
   buyMaxBuildings();
   update();
 };
+document.getElementById('seasonalEventBtn').onclick = () => {
+  triggerSeasonalEvent();
+};
 
-// Auto coins per sec
+// Auto income
 setInterval(() => {
   const totalAuto = getTotalAutoIncome();
   if (totalAuto > 0) {
@@ -411,7 +338,51 @@ setInterval(() => {
   }
 }, 1000);
 
-// Load
+// Seasonal Event
+function triggerSeasonalEvent() {
+  data.seasonalEventActive = true;
+  showNotification('🎉 Orange Harvest Festival! Click Golden Coins!');
+  // Create golden coins
+  for (let i=0; i<3+Math.floor(Math.random()*3); i++) {
+    createGoldenCoin();
+  }
+  setTimeout(() => { data.seasonalEventActive = false; }, 15000);
+}
+function createGoldenCoin() {
+  const coin = document.createElement('div');
+  coin.innerText = '🪙✨';
+  coin.style.position = 'absolute';
+  const rect = dave.getBoundingClientRect();
+  coin.style.left = (rect.left + rect.width/2 + Math.random()*50 -25 + window.scrollX)+'px';
+  coin.style.top = (rect.top + rect.height/2 + Math.random()*50 -25 + window.scrollY)+'px';
+  coin.style.fontSize = '30px';
+  coin.style.opacity = 1;
+  notificationsDiv.appendChild(coin);
+  const targetX = Math.random()*window.innerWidth;
+  const targetY = Math.random()*window.innerHeight;
+  const duration = 2000 + Math.random()*1000;
+  const startTime = performance.now();
+
+  function animate() {
+    const elapsed = performance.now() - startTime;
+    if (elapsed > duration) {
+      notificationsDiv.removeChild(coin);
+      // Big reward
+      data.money += 50;
+      showNotification('🎉 Golden Coin! +50 Dave Coins!');
+      update();
+      return;
+    }
+    const progress = elapsed / duration;
+    coin.style.left = (parseFloat(coin.style.left) + (targetX - parseFloat(coin.style.left)) * progress) + 'px';
+    coin.style.top = (parseFloat(coin.style.top) + (targetY - parseFloat(coin.style.top)) * progress) + 'px';
+    coin.style.opacity = 1 - progress;
+    requestAnimationFrame(animate);
+  }
+  animate();
+}
+
+// Load and save
 load();
 update();
 setInterval(save, 5000);
