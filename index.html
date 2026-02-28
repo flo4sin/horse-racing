@@ -75,7 +75,7 @@ button {
 }
 button:active { transform: translateY(2px); box-shadow: 0 2px 0 #8b6d00; }
 button:disabled { background: #555; color: #888; box-shadow: none; cursor: not-allowed; }
-/* Reset button style */
+/* Reset button style closer to bet controls */
 #resetBtn {
     margin-top: 10px;
     padding: 10px 20px;
@@ -85,6 +85,7 @@ button:disabled { background: #555; color: #888; box-shadow: none; cursor: not-a
 #resetBtn:hover {
     background: #ffd700; color: #000;
 }
+.hint { margin-top: 10px; color: #aaa; font-size: 12px; }
 /* Highscore display style (improved) */
 #highscoreDisplay {
     margin-top: 20px;
@@ -101,8 +102,6 @@ button:disabled { background: #555; color: #888; box-shadow: none; cursor: not-a
     text-align: center;
     box-shadow: 0 0 10px #ffd700;
 }
-.hint { margin-top: 10px; color: #aaa; font-size: 12px; }
-/* Responsive adjustments */
 @media (max-width: 480px) {
     .ui-panel { flex-direction: column; }
     select { max-width: 100%; width: 100%; }
@@ -120,7 +119,7 @@ button:disabled { background: #555; color: #888; box-shadow: none; cursor: not-a
 <!-- Highscore display -->
 <div id="highscoreDisplay">Highscore: 0</div>
 
-<!-- Reset button -->
+<!-- Reset button placed closer to bet controls -->
 <div style="margin-top:10px; display:flex; justify-content:center; gap:10px;">
     <button id="resetBtn">Reset Game</button>
 </div>
@@ -152,6 +151,7 @@ button:disabled { background: #555; color: #888; box-shadow: none; cursor: not-a
 <div class="hint">Tip: Press <b>SPACEBAR</b> to Bet/Confirm</div>
 
 <script>
+// Core variables
 const canvas = document.getElementById('raceTrack');
 const ctx = canvas.getContext('2d');
 const startBtn = document.getElementById('startBtn');
@@ -167,7 +167,7 @@ const closeOverlayBtn = document.getElementById('closeOverlayBtn');
 const resetBtn = document.getElementById('resetBtn');
 const highscoreDisplay = document.getElementById('highscoreDisplay');
 
-let balance = 2000; // starting amount
+let balance = 2000; // Starting amount
 let highscore = localStorage.getItem('horseHighscore') || 0;
 highscoreDisplay.innerText = 'Highscore: ' + highscore;
 
@@ -199,6 +199,7 @@ function initHorses() {
     }));
 }
 
+// Drawing functions
 function drawTrack() {
     ctx.fillStyle = "#5d4037";
     ctx.beginPath(); ctx.ellipse(500, 250, 450, 250, 0, 0, Math.PI * 2); ctx.fill();
@@ -241,7 +242,7 @@ function animate(timestamp) {
             const smoothProgress = Math.max(0, (progress * h.speedMult) + suspense);
             h.angle = (1.5 * Math.PI) + (smoothProgress * Math.PI * 2);
         } else {
-            h.angle = (1.5 * Math.PI) + (1.0 * h.speedMult * Math.PI * 2);
+            h.angle = (1.5 * Math.PI) + (h.speedMult * Math.PI * 2);
         }
     });
 
@@ -368,10 +369,14 @@ document.getElementById('resetBtn').addEventListener('click', () => {
     startTime = null;
 });
 
+// Make sure the startBtn click works
+document.getElementById('startBtn').addEventListener('click', handleBet);
+
 document.getElementById('closeOverlayBtn').addEventListener('click', () => {
     closeOverlay();
 });
 
+// Spacebar handler
 window.addEventListener('keydown', (e) => {
     if (e.code === "Space") {
         e.preventDefault();
