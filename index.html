@@ -285,6 +285,10 @@ function finishRace() {
     setTimeout(() => {
         resultOverlay.style.display = "block";
         overlayVisible = true;
+        // Re-enable betting and reset 'canBet' after race ends
+        canBet = true;
+        startBtn.disabled = false;
+        horseSelect.disabled = false;
     }, 500);
 }
 
@@ -298,8 +302,8 @@ function closeOverlay() {
     startTime = null;
     initHorses();
     renderAll();
-    // Re-enable reset button after race ends
-    resetBtn.disabled = false;
+    // Re-enable betting for next race
+    canBet = true;
 }
 
 // Handle Bet
@@ -322,7 +326,7 @@ function handleBet() {
     // Disable reset button during race
     resetBtn.disabled = true;
 
-    canBet = false;
+    canBet = false; // prevent multiple bets
     startBtn.blur();
     horseSelect.disabled = true;
     startBtn.disabled = true;
@@ -377,7 +381,7 @@ document.getElementById('resetBtn').addEventListener('click', () => {
     resultOverlay.style.display = "none";
     overlayVisible = false;
     racing = false;
-    canBet = true;
+    canBet = true; // Reset betting permission
     startTime = null;
     resetBtn.disabled = false;
 });
@@ -393,6 +397,8 @@ function finishRace() {
         resultOverlay.style.display = "block";
         overlayVisible = true;
         resetBtn.disabled = false; // re-enable on race end
+        // Re-enable betting for next race
+        canBet = true;
     }, 500);
 }
 function closeOverlay() {
@@ -404,7 +410,8 @@ function closeOverlay() {
     startTime = null;
     initHorses();
     renderAll();
-    resetBtn.disabled = false; // re-enable after overlay
+    // Re-enable betting
+    canBet = true;
 }
 
 // Initialize game
