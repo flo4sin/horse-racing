@@ -60,8 +60,8 @@ button:hover {
 <body>
 
 <h1>Dave Clicker Idle Game</h1>
-<!-- Placeholder image of Dave (original image used as a humorous cartoon) -->
-<img src="https://i.imgur.com/4AiXzf8.png" id="dave" alt="Dave" />
+<!-- Replace the src with your provided image -->
+<img src="https://i.imgur.com/your_image_link_here.jpg" id="dave" alt="Dave" />
 
 <div id="stats">
   <div>Money: $<span id="money">0</span></div>
@@ -75,12 +75,11 @@ button:hover {
 </div>
 
 <script>
-// Game variables
+// Copy the previous game script here
 let money = 0;
 let moneyPerClick = 1;
 let autoIncome = 0;
 
-// Elements
 const moneySpan = document.getElementById('money');
 const perClickSpan = document.getElementById('perClick');
 const autoIncomeSpan = document.getElementById('autoIncome');
@@ -89,20 +88,17 @@ const dave = document.getElementById('dave');
 const clickUpgradeBtn = document.getElementById('clickUpgrade');
 const autoUpgradeBtn = document.getElementById('autoUpgrade');
 
-// Function to update display
 function updateDisplay() {
   moneySpan.innerText = money.toFixed(2);
   perClickSpan.innerText = moneyPerClick.toFixed(2);
   autoIncomeSpan.innerText = autoIncome.toFixed(2);
 }
 
-// Click on Dave
 dave.addEventListener('click', () => {
   money += moneyPerClick;
   updateDisplay();
 });
 
-// Buy click upgrade
 clickUpgradeBtn.addEventListener('click', () => {
   if (money >= 10) {
     money -= 10;
@@ -113,24 +109,21 @@ clickUpgradeBtn.addEventListener('click', () => {
   }
 });
 
-// Buy auto income upgrade
 autoUpgradeBtn.addEventListener('click', () => {
   if (money >= 50) {
     money -= 50;
-    autoIncome += 1; // Increase auto income by $1/sec
+    autoIncome += 1;
     updateDisplay();
   } else {
     alert('Not enough money to upgrade auto income!');
   }
 });
 
-// Auto income generation
 setInterval(() => {
   money += autoIncome;
   updateDisplay();
 }, 1000);
 
-// Initialize display
 updateDisplay();
 </script>
 
