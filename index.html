@@ -29,7 +29,6 @@
     z-index: 9999;
     transition: 0.3s;
   }
-
   a.back-hub:hover {
     background: #ffd700;
     color: #000;
@@ -181,7 +180,6 @@
     box-shadow: 0 0 10px #ffd700;
     text-align: center;
   }
-
 </style>
 </head>
 <body>
@@ -357,10 +355,10 @@ function finishRace() {
   const betOn = horseSelect.value;
   const winner = horses.reduce((a, b) => a.angle > b.angle ? a : b);
   const isWin = winner.id == betOn;
-  const betAmount = currentBet;
+  const betAmt = currentBet;
 
   if (isWin) {
-    const payout = betAmount * 5;
+    const payout = betAmt * 5;
     balance += payout;
     resultTitle.innerText = "🏆 YOU WON!";
     resultTitle.className = "win-text";
@@ -375,7 +373,6 @@ function finishRace() {
     resultTitle.className = "lose-text";
     resultMessage.innerText = `Horse #${winner.label} won the race. Better luck next time!`;
   }
-  document.querySelector('#balanceSpan').innerText = balance;
   document.querySelector('#balanceSpan').innerText = balance;
 
   setTimeout(() => {
@@ -403,7 +400,10 @@ function closeOverlay() {
 
 // Handle Bet
 function handleBet() {
-  if (racing || !canBet || overlayVisible) return;
+  if (racing || !canBet || overlayVisible) {
+    console.log('Bet rejected:', {racing, canBet, overlayVisible});
+    return;
+  }
 
   const betAmt = parseInt(betSlider.value);
   if (isNaN(betAmt) || betAmt < 1) {
@@ -423,23 +423,15 @@ function handleBet() {
   startBtn.disabled = true;
   horseSelect.disabled = true;
 
+  startTime = null; // Reset start time
   requestAnimationFrame(animate);
 }
 
+// Button and event wiring
+document.getElementById('placeBetBtn').onclick = handleBet;
 document.getElementById('continueBtn').onclick = () => {
-  document.getElementById('resultOverlay').style.display = 'none';
-  overlayVisible = false;
-  racing = false;
-  startBtn.disabled = false;
-  horseSelect.disabled = false;
-  startTime = null;
-  initHorses();
-  render();
-  // Re-enable betting
-  canBet = true;
+  closeOverlay();
 };
-
-// Event listeners
 document.getElementById('resetBtn').onclick = () => {
   balance = 2000;
   localStorage.setItem('blackjackHighScore', 0);
@@ -453,13 +445,6 @@ document.getElementById('resetBtn').onclick = () => {
   racing = false;
   canBet = true;
 };
-
-document.getElementById('placeBetBtn').onclick = handleBet;
-
-document.getElementById('continueBtn').onclick = () => {
-  closeOverlay();
-};
-
 window.addEventListener('keydown', (e) => {
   if (e.code === 'Space') {
     e.preventDefault();
@@ -477,6 +462,9 @@ betSlider.oninput = () => {
 };
 betSlider.value = 10;
 betAmountDisplay.innerText = '$10';
+
+// Initial render
+render();
 
 </script>
 </body>
