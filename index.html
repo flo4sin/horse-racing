@@ -8,7 +8,7 @@
 body { 
     background: radial-gradient(circle, #1a3c1a 0%, #0a1a0a 100%); 
     color: #fff; font-family: 'Segoe UI', sans-serif; 
-    margin: 0; padding: 10px; 
+    text-align: center; margin: 0; padding: 10px; 
     overflow-x: hidden;
 }
 .back-hub {
@@ -37,7 +37,7 @@ canvas {
     box-shadow: 0 10px 30px rgba(0,0,0,0.8); margin: 0 auto; 
     display: block; width: 100%; height: auto;
 }
-/* Custom Result Overlay */
+/* NEW: Custom Result Overlay */
 #resultOverlay {
     position: absolute;
     top: 50%; left: 50%;
@@ -48,7 +48,7 @@ canvas {
     padding: 30px;
     width: 80%;
     max-width: 400px;
-    display: none; /* hidden initially */
+    display: none; /* Hidden by default */
     z-index: 100;
     box-shadow: 0 0 50px rgba(0,0,0,1);
 }
@@ -56,46 +56,40 @@ canvas {
 #resultMessage { font-size: 18px; margin-bottom: 20px; }
 .win-text { color: #ffd700; text-shadow: 0 0 10px #ffd700; }
 .lose-text { color: #ff4444; }
-/* Bottom fixed controls (Bet, Reset, Tip) */
-#bottomControls {
-    position: fixed;
-    bottom: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(0,0,0,0.7);
-    border-radius: 10px;
+/* UI Panel for bet controls and new buttons */
+.ui-panel { 
+    background: rgba(0,0,0,0.9); border: 2px solid #ffd700; border-radius: 15px; 
+    padding: 15px; margin: 20px auto; max-width: 600px; 
+    display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 15px;
+}
+.balance-box { font-size: 20px; color: #ffd700; font-weight: bold; min-width: 100px; }
+select { 
+    padding: 12px; border-radius: 8px; font-weight: bold; outline: none; 
+    cursor: pointer; background: #fff; flex-grow: 1; max-width: 200px;
+}
+select:disabled { background: #666; color: #ccc; cursor: not-allowed; }
+button { 
+    background: linear-gradient(#ffd700, #b8860b); color: #000; font-weight: bold; 
+    padding: 15px 25px; border-radius: 8px; border: none; cursor: pointer; 
+    box-shadow: 0 4px 0 #8b6d00; outline: none; font-size: 16px;
+}
+button:active { transform: translateY(2px); box-shadow: 0 2px 0 #8b6d00; }
+button:disabled { background: #555; color: #888; box-shadow: none; cursor: not-allowed; }
+/* Reset button style closer to bet controls */
+#resetBtn {
+    margin-top: 10px;
     padding: 10px 20px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    z-index: 999;
-}
-#bottomControls button {
-    padding: 10px 15px;
+    background: #555; color: #fff; border-radius: 8px; border: none; cursor: pointer;
     font-weight: bold;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
 }
-#bottomControls button:hover {
-    background: #ffd700;
-    color: #000;
+#resetBtn:hover {
+    background: #ffd700; color: #000;
 }
-#betInput {
-    width: 80px;
-    padding: 8px;
-    font-size: 14px;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-}
-#tipText {
-    margin-left: 10px;
-    font-size: 14px;
-    color: #ccc;
-}
+.hint { margin-top: 10px; color: #aaa; font-size: 12px; }
+/* Highscore display style (improved) */
 #highscoreDisplay {
     margin-top: 20px;
-    font-size: 24px;
+    font-size: 24px; /* Bigger font for prominence */
     color: #ffd700;
     font-weight: bold;
     max-width: 400px;
@@ -109,18 +103,10 @@ canvas {
     box-shadow: 0 0 10px #ffd700;
 }
 @media (max-width: 480px) {
-    #bottomControls {
-        flex-direction: column;
-        width: 100%;
-        bottom: 10px;
-        left: 0;
-        transform: none;
-        border-top: 1px solid #ffd700;
-        border-radius: 0 0 10px 10px;
-    }
-    #bottomControls button {
-        width: 100%;
-    }
+    .ui-panel { flex-direction: column; }
+    select { max-width: 100%; width: 100%; }
+    button { width: 100%; }
+    #resetBtn { width: 100%; }
 }
 </style>
 </head>
@@ -133,7 +119,11 @@ canvas {
 <!-- Highscore display -->
 <div id="highscoreDisplay">Highscore: 0</div>
 
-<!-- Canvas and overlay -->
+<!-- Reset button closer to bet controls -->
+<div style="margin-top:10px; display:flex; justify-content:center; gap:10px;">
+    <button id="resetBtn">Reset Game</button>
+</div>
+
 <div class="game-container">
     <canvas id="raceTrack" width="1000" height="500"></canvas>
     <div id="resultOverlay">
@@ -144,38 +134,47 @@ canvas {
     </div>
 </div>
 
-<!-- Bottom fixed controls (Bet, Reset, Tip) -->
-<div id="bottomControls">
-    <input type="number" id="betInput" min="1" max="1000" value="10" />
-    <span id="tipText">Tip: Press SPACEBAR to Bet/Confirm</span>
-    <button id="placeBetBtn">PLACE BET</button>
-    <button id="resetBtn">Reset Game</button>
+<!-- Bet controls -->
+<div class="ui-panel" style="margin-top: 10px;">
+    <label for="betAmount" style="margin-right:8px;">Bet Amount ($):</label>
+    <input type="number" id="betAmount" min="1" max="1000" value="10" style="width:80px; padding:8px; font-size:14px;">
+    <div class="balance-box">💰 <span id="balance">2000</span></div>
+    <select id="horseSelect">
+        <option value="0">#1 Red Rocket</option>
+        <option value="1">#2 Blue Bolt</option>
+        <option value="2">#3 Gold Gallop</option>
+        <option value="3">#4 Silver Streak</option>
+        <option value="4">#5 Purple Power</option>
+    </select>
+    <button id="startBtn">PLACE BET</button>
 </div>
+<div class="hint">Tip: Press <b>SPACEBAR</b> to Bet/Confirm</div>
 
 <script>
-// Variables
+// Basic setup
 const canvas = document.getElementById('raceTrack');
 const ctx = canvas.getContext('2d');
-
-const placeBetBtn = document.getElementById('placeBetBtn');
-const resetBtn = document.getElementById('resetBtn');
-const betInput = document.getElementById('betInput');
+const startBtn = document.getElementById('startBtn');
+const horseSelect = document.getElementById('horseSelect');
+const balanceEl = document.getElementById('balance');
+const betAmountInput = document.getElementById('betAmount');
 
 const resultOverlay = document.getElementById('resultOverlay');
 const resultTitle = document.getElementById('resultTitle');
 const resultMessage = document.getElementById('resultMessage');
 const closeOverlayBtn = document.getElementById('closeOverlayBtn');
 
+const resetBtn = document.getElementById('resetBtn');
 const highscoreDisplay = document.getElementById('highscoreDisplay');
 
-let balance = 2000;
+let balance = 2000; // Starting amount
 let highscore = localStorage.getItem('horseHighscore') || 0;
 highscoreDisplay.innerText = 'Highscore: ' + highscore;
 
 let racing = false;
 let overlayVisible = false;
 let startTime = null;
-let canBet = true;
+let canBet = true; 
 const raceDuration = 12000;
 
 const horseData = [
@@ -189,15 +188,14 @@ const horseData = [
 let horses = [];
 let currentBetAmount = 10;
 
-// Initialize horses
 function initHorses() {
     horses = horseData.map((h, i) => ({
         ...h,
         angle: 1.5 * Math.PI,
-        rx: 300 + (i * 30),
+        rx: 300 + (i * 30), 
         ry: 120 + (i * 25),
         phaseShift: Math.random() * 10,
-        speedMult: 0.985 + (Math.random() * 0.035)
+        speedMult: 0.985 + (Math.random() * 0.035) 
     }));
 }
 
@@ -240,6 +238,7 @@ function animate(timestamp) {
     if (!startTime) startTime = timestamp;
     const elapsed = timestamp - startTime;
     const progress = Math.min(elapsed / raceDuration, 1);
+
     horses.forEach(h => {
         if (progress < 1) {
             const suspense = Math.sin(progress * 12 + h.phaseShift) * 0.012;
@@ -249,6 +248,7 @@ function animate(timestamp) {
             h.angle = (1.5 * Math.PI) + (h.speedMult * Math.PI * 2);
         }
     });
+
     renderAll();
     if (progress < 1) {
         requestAnimationFrame(animate);
@@ -280,15 +280,15 @@ function finishRace() {
         resultTitle.className = "lose-text";
         resultMessage.innerText = `Horse #${winner.label} won the race. Better luck next time!`;
     }
-    document.getElementById('balance').innerText = balance;
+    balanceEl.innerText = balance;
+
     setTimeout(() => {
         resultOverlay.style.display = "block";
         overlayVisible = true;
-        // Re-enable reset after race
-        resetBtn.disabled = false;
     }, 500);
 }
 
+// Close overlay
 function closeOverlay() {
     resultOverlay.style.display = "none";
     overlayVisible = false;
@@ -298,15 +298,16 @@ function closeOverlay() {
     startTime = null;
     initHorses();
     renderAll();
+    // Re-enable reset button after race ends
     resetBtn.disabled = false;
 }
 
 // Handle Bet
 function handleBet() {
     if (racing || !canBet || overlayVisible) return;
-    const betAmount = parseInt(betInput.value, 10);
+    const betAmount = parseInt(betAmountInput.value, 10);
     if (isNaN(betAmount) || betAmount < 1) {
-        showCustomPopup(`Hey Dave's Rules!`, `You can bet $0, but only if you're willing to accept Dave's rule: "No free rides, partner!"`);
+        showCustomPopup("Invalid Bet", "Please enter a bet amount of at least $1.");
         return;
     }
     if (balance < betAmount) {
@@ -317,20 +318,22 @@ function handleBet() {
         overlayVisible = true;
         return;
     }
-    // Disable reset during race
+
+    // Disable reset button during race
     resetBtn.disabled = true;
+
     canBet = false;
     startBtn.blur();
     horseSelect.disabled = true;
     startBtn.disabled = true;
     balance -= betAmount;
-    document.getElementById('balance').innerText = balance;
+    balanceEl.innerText = balance;
     currentBetAmount = betAmount;
     racing = true;
     requestAnimationFrame(animate);
 }
 
-// Show custom popup
+// Show custom popup for invalid input
 function showCustomPopup(title, message) {
     let popup = document.getElementById('customPopup');
     if (!popup) {
@@ -356,18 +359,19 @@ function showCustomPopup(title, message) {
         <button style="background:linear-gradient(#ffd700,#b8860b); padding:10px 20px; border:none; border-radius:8px; font-weight:bold; cursor:pointer;" id="popupCloseBtn">OK</button>
     `;
     popup.style.display = 'block';
+
     document.getElementById('popupCloseBtn').onclick = () => {
         popup.style.display = 'none';
     };
 }
 
-// Reset game
+// Reset button disables during game
 document.getElementById('resetBtn').addEventListener('click', () => {
     balance = 2000;
     highscore = 0;
     localStorage.setItem('horseHighscore', highscore);
     highscoreDisplay.innerText = 'Highscore: ' + highscore;
-    document.getElementById('balance').innerText = balance;
+    balanceEl.innerText = balance;
     initHorses();
     renderAll();
     resultOverlay.style.display = "none";
@@ -375,17 +379,55 @@ document.getElementById('resetBtn').addEventListener('click', () => {
     racing = false;
     canBet = true;
     startTime = null;
-    // keep reset enabled
     resetBtn.disabled = false;
 });
- 
-// Attach event to "Place Bet" button
-document.getElementById('placeBetBtn').addEventListener('click', handleBet);
+
+// When race starts, disable reset button
+// Already handled in handleBet()
+
+// When race ends or overlay closed, re-enable reset button
+function finishRace() {
+    // ... existing code ...
+    // Show overlay
+    setTimeout(() => {
+        resultOverlay.style.display = "block";
+        overlayVisible = true;
+        resetBtn.disabled = false; // re-enable on race end
+    }, 500);
+}
+function closeOverlay() {
+    resultOverlay.style.display = "none";
+    overlayVisible = false;
+    racing = false;
+    startBtn.disabled = false;
+    horseSelect.disabled = false;
+    startTime = null;
+    initHorses();
+    renderAll();
+    resetBtn.disabled = false; // re-enable after overlay
+}
+
+// Initialize game
+function initHorses() {
+    horses = horseData.map((h, i) => ({
+        ...h,
+        angle: 1.5 * Math.PI,
+        rx: 300 + (i * 30), 
+        ry: 120 + (i * 25),
+        phaseShift: Math.random() * 10,
+        speedMult: 0.985 + (Math.random() * 0.035) 
+    }));
+}
+initHorses();
+renderAll();
+
+// Attach event listener to start button
+document.getElementById('startBtn').addEventListener('click', handleBet);
 // Attach event to overlay close button
 document.getElementById('closeOverlayBtn').addEventListener('click', () => {
     closeOverlay();
 });
-// Spacebar to bet / continue
+// Attach spacebar handler
 window.addEventListener('keydown', (e) => {
     if (e.code === "Space") {
         e.preventDefault();
@@ -397,8 +439,7 @@ window.addEventListener('keydown', (e) => {
     }
 });
 
-// Initialize scene
-initHorses();
+// Draw initial scene
 renderAll();
 </script>
 </body>
