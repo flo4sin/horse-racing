@@ -2,386 +2,361 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Dave Coins Idle Game</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Dave Poker - The Simplified Poker Game</title>
+<script src="https://cdn.tailwindcss.com"></script>
 <style>
-body {
-  background: linear-gradient(to right, #ffcc00, #ff6600);
-  font-family: 'Arial', sans-serif;
-  margin: 0;
-  padding: 20px;
-  text-align: center;
-  color: #fff;
-  position: relative;
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+:root { --felt-green: #386641; --dark-bg: #1a202c; --card-red: #cc0000; }
+body { font-family: 'Inter', sans-serif; background-color: var(--dark-bg); color: #e2e8f0; display: flex; justify-content: center; align-items: center; height: 100vh; width: 100vw; padding: 0; margin: 0; overflow: hidden; }
+
+#game-container { width: 100%; height: 100%; max-width: 700px; background-color: #2d3748; padding: 0.75rem; display: flex; flex-direction: column; gap: 0.5rem; position: relative; overflow-y: auto; }
+
+.card-slot { width: 48px; height: 72px; perspective: 1000px; display: inline-block; margin: 0 2px; vertical-align: middle; }
+.card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); transform-style: preserve-3d; }
+.card-slot.flipped .card-inner { transform: rotateY(180deg); }
+.card-front, .card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 0.4rem; box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3); display: flex; flex-direction: column; justify-content: space-between; padding: 2px 0; font-weight: 800; overflow: hidden; }
+.card-front { background: white; color: black; transform: rotateY(180deg); }
+.card-back { background: linear-gradient(145deg, #a73737, #d94848); border: 2px solid gold; transform: rotateY(0deg); }
+.card-red { color: var(--card-red); }
+.rank-top { font-size: 0.75rem; text-align: center; width: 100%; line-height: 1; margin-top: 2px; }
+.suit-center { font-size: 1.4rem; text-align: center; width: 100%; flex-grow: 1; display: flex; align-items: center; justify-content: center; }
+.rank-bottom { font-size: 0.75rem; text-align: center; width: 100%; line-height: 1; margin-bottom: 2px; transform: rotate(180deg); }
+
+@keyframes dealCard {
+    from { transform: translateY(-300px) rotate(25deg); opacity: 0; }
+    to { transform: translateY(0) rotate(0deg); opacity: 1; }
 }
-h1 {
-  font-size: 2em;
-  margin-bottom: 10px;
-}
-#dave {
-  width: 300px;
-  cursor: pointer;
-  border-radius: 20px;
-  border: 5px solid #fff;
-  box-shadow: 0 0 20px #fff;
-  transition: transform 0.1s;
-  margin-top: 10px;
-}
-#dave:hover {
-  transform: scale(1.05);
-}
-#stats {
-  margin-top: 20px;
-  font-size: 1.2em;
-}
-#money {
-  font-size: 2em;
-  margin: 10px 0;
-}
-#upgrades {
-  margin-top: 20px;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-button {
-  background: #fff;
-  color: #ff6600;
-  border: none;
-  padding: 10px 20px;
-  margin: 10px;
-  border-radius: 10px;
-  font-weight: bold;
-  cursor: pointer;
-  box-shadow: 0 0 10px #fff;
-  font-size: 1em;
-  transition: background 0.3s;
-}
-button:hover {
-  background: #ffcc00;
-}
-#buildings {
-  margin-top: 20px;
-  max-width: 800px;
-  margin-left: auto;
-  margin-right: auto;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-.building {
-  background: rgba(255,255,255,0.2);
-  border-radius: 10px;
-  padding: 10px;
-  margin: 10px;
-  flex: 1 1 200px;
-  max-width: 250px;
-}
-.building h3 {
-  margin-top: 0;
-}
-/* Reset Button Styles */
-#resetButton {
-  position: fixed;
-  bottom: 10px;
-  right: 10px;
-  background: #fff;
-  color: #ff6600;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 10px;
-  font-weight: bold;
-  cursor: pointer;
-  box-shadow: 0 0 10px #fff;
-  font-size: 1em;
-  transition: background 0.3s;
-}
-#resetButton:hover {
-  background: #ffcc00;
-}
+.new-card { animation: dealCard 0.4s ease-out forwards; }
+
+.hand-display { min-height: 85px; display: flex; justify-content: center; align-items: center; padding: 5px 0; }
+.dealer-area, .player-area { background-color: var(--felt-green); border-radius: 0.5rem; padding: 0.5rem; border: 1px solid #528c5e; height: 125px; flex-shrink: 0; display: flex; flex-direction: column; justify-content: center; }
+.player-area { border: 3px solid #f6e05e; }
+
+.btn-base { @apply font-extrabold py-3 rounded-xl transition duration-200 shadow-xl transform active:scale-95 text-lg; }
+.btn-action { @apply btn-base bg-indigo-600 hover:bg-indigo-700 text-white; }
+.action-button-large { height: 75px; @apply text-xl; }
+
+input[type=range] { width: 100%; cursor: pointer; accent-color: #fbbf24; height: 12px; border-radius: 6px; outline: none; }
+.back-hub { position: absolute; top: 20px; left: 20px; padding: 10px 15px; background: #333; color: #ffd700; text-decoration: none; border-radius: 5px; font-weight: bold; border: 1px solid #ffd700; z-index: 9999; }
 </style>
 </head>
 <body>
 
-<h1>Dave Coins - Idle Clicker</h1>
-<!-- Your provided Dave image -->
-<img src="https://i.imgur.com/1UfrW92.png" id="dave" alt="Dave" />
+<a href="#" class="back-hub">⬅ Back to Hub</a>
 
-<div id="stats">
-  <div>Dave Coins: <span id="money">0</span></div>
-  <div>Coins per Click: <span id="perClick">1</span></div>
-  <div>Auto Coins/sec: <span id="autoCoins">0</span></div>
-  <div>Prestige Multiplier: <span id="prestigeMultiplier">1</span></div>
-  <div>Prestige Threshold: <span id="prestigeThreshold"></span></div>
+<div id="game-container">
+    <div class="flex flex-col gap-1 flex-shrink-0">
+        <h1 class="text-2xl font-black text-center text-yellow-400 tracking-wider">DAVE POKER</h1>
+        <div class="grid grid-cols-3 gap-2 text-xl font-black bg-gray-800 p-2 rounded-lg border border-gray-700">
+            <div class="flex flex-col items-start"><span class="text-xs uppercase text-gray-400">CHIPS</span><span id="chips-display" class="text-green-400">$2,000</span></div>
+            <div class="flex flex-col items-center"><span class="text-xs uppercase text-gray-400">HIGH SCORE</span><span id="high-score-display" class="text-yellow-400">$2,000</span></div>
+            <div class="flex flex-col items-end"><span class="text-xs uppercase text-gray-400">WAGER</span><span id="current-wager-display" class="text-yellow-300">$0</span></div>
+        </div>
+        <div id="message-box" class="h-8 text-center text-sm font-extrabold rounded-lg flex items-center justify-center border-2 border-gray-700">Place your bet and press DEAL.</div>
+    </div>
+
+    <div class="flex-shrink-0 flex flex-col gap-1">
+        <div class="dealer-area">
+            <h2 class="text-sm font-bold text-gray-200 mb-1 text-center">DEALER</h2>
+            <div id="dealer-hand" class="hand-display"></div>
+        </div>
+        <div class="player-area">
+            <h2 class="text-sm font-bold text-gray-100 mb-1 text-center">PLAYER</h2>
+            <div id="player-hand" class="hand-display"></div>
+        </div>
+    </div>
+
+    <div id="primary-action-row" class="flex-shrink-0 mt-2">
+        <div id="action-controls" class="flex justify-between gap-2" style="display: none;">
+            <button id="bet-btn" class="btn-base action-button-large bg-orange-500 hover:bg-orange-600 text-white w-full">DEAL</button>
+        </div>
+        <div id="game-controls" style="display: none;">
+            <button id="hit-btn" class="btn-action action-button-large w-1/3">HIT</button>
+            <button id="stand-btn" class="btn-action action-button-large w-1/3">STAND</button>
+            <button id="fold-btn" class="btn-action action-button-large w-1/3">FOLD</button>
+        </div>
+        <div id="restart-controls" style="display: none;">
+            <button id="new-round-btn" class="btn-base action-button-large bg-yellow-500 hover:bg-yellow-600 text-gray-900 w-full">NEW ROUND</button>
+        </div>
+    </div>
+
+    <div id="betting-controls" class="flex flex-col gap-2 mt-3 bg-gray-800 p-4 rounded-xl border border-gray-600">
+        <div class="text-3xl font-black text-center text-yellow-300 tracking-wide mb-2">BET: <span id="current-betting-display">$100</span></div>
+        <input type="range" id="bet-slider" min="1" max="100" step="1" value="5" />
+        <div class="flex justify-center gap-2 mt-1">
+            <button id="all-in-btn" class="bg-red-600 hover:bg-red-700 text-white px-10 py-2 rounded-lg font-black tracking-tight active:scale-95 transition">ALL IN</button>
+        </div>
+    </div>
 </div>
-
-<div id="buildings"></div>
-
-<div id="upgrades">
-  <button id="clickUpgrade">Increase Click (+1) ($10)</button>
-  <button id="autoUpgrade">Add Auto Coin (+1/sec) ($50)</button>
-  <button id="prestigeBtn">Prestige (Reset & Gain Multiplier)</button>
-</div>
-
-<!-- Reset Button in Bottom Corner -->
-<button id="resetButton">Reset Game</button>
 
 <script>
-// Persistent data
-let data = JSON.parse(localStorage.getItem('daveCoinsData')) || {
-  money: 0,
-  coinsPerClick: 1,
-  autoCoinsPerSec: 0,
-  prestigeMultiplier: 1,
-  prestigeCount: 0,
-  buildings: {
-    farmer: { count: 0, cost: 10, baseCost: 10, rate: 1, unlocked: false },
-    tractor: { count: 0, cost: 100, baseCost: 100, rate: 10, unlocked: false },
-  }
-};
-
-// Initial prestige threshold
-let prestigeThreshold = 1000;
+// Basic data
+const SUITS = ['♥', '♦', '♣', '♠'];
+const RANKS = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+let chips = 2000, highScore = 2000, currentBet = 0;
+let deck = [], playerHand = [], dealerHand = [];
+let gameState = 'waiting'; // 'waiting', 'dealing', 'player-turn', 'dealer-turn', 'show-result'
 
 // Elements
-const moneySpan = document.getElementById('money');
-const perClickSpan = document.getElementById('perClick');
-const autoCoinsSpan = document.getElementById('autoCoins');
-const prestigeSpan = document.getElementById('prestigeMultiplier');
-const prestigeThresholdSpan = document.getElementById('prestigeThreshold');
+const elements = {
+    chips: document.getElementById('chips-display'),
+    highScore: document.getElementById('high-score-display'),
+    wager: document.getElementById('current-wager-display'),
+    msg: document.getElementById('message-box'),
+    dHand: document.getElementById('dealer-hand'),
+    pHand: document.getElementById('player-hand'),
+    dScore: document.createElement('div'),
+    pScore: document.createElement('div'),
+    slider: document.getElementById('bet-slider'),
+    betDisplay: document.querySelector('#current-betting-display'),
+    betRange: document.getElementById('bet-slider'),
+    dealBtn: document.getElementById('bet-btn'),
+    hitBtn: document.getElementById('hit-btn'),
+    standBtn: document.getElementById('stand-btn'),
+    foldBtn: document.getElementById('fold-btn'),
+    newRoundBtn: document.getElementById('new-round-btn'),
+    actionControls: document.getElementById('action-controls'),
+    gameControls: document.getElementById('game-controls'),
+    restartControls: document.getElementById('restart-controls'),
+};
 
-const dave = document.getElementById('dave');
-const btnClickUpgrade = document.getElementById('clickUpgrade');
-const btnAutoUpgrade = document.getElementById('autoUpgrade');
-const btnPrestige = document.getElementById('prestigeBtn');
-const buildingsDiv = document.getElementById('buildings');
-const resetBtn = document.getElementById('resetButton');
+// Utility functions
+const sleep = (ms) => new Promise(res => setTimeout(res, ms));
+function format(v) { return '$' + Math.floor(v).toLocaleString(); }
 
-// Buildings data
-const buildingTypes = [
-  {
-    key: 'farmer',
-    name: 'Amish Farmer',
-    baseCost: 10,
-    rate: 1,
-    unlockPrestige: 1,
-  },
-  {
-    key: 'tractor',
-    name: 'Bright Orange Tractor',
-    baseCost: 100,
-    rate: 10,
-    unlockPrestige: 2,
-  },
-];
-
-// Save data
-function save() {
-  localStorage.setItem('daveCoinsData', JSON.stringify(data));
+// Card creation
+function createCardElement(card, isFlipped=true, isNew=false) {
+    const slot = document.createElement('div');
+    slot.className = `card-slot ${isFlipped ? 'flipped' : ''} ${isNew ? 'new-card' : ''}`;
+    slot.innerHTML = `
+        <div class="card-inner">
+            <div class="card-back"></div>
+            <div class="card-front ${card.suit==='♥'||card.suit==='♦'?'card-red':''}">
+                <div class="rank-top">${card.rank}</div>
+                <div class="suit-center">${card.suit}</div>
+                <div class="rank-bottom">${card.rank}</div>
+            </div>
+        </div>`;
+    return slot;
 }
 
-// Update display
-function update() {
-  const totalMoney = data.money * data.prestigeMultiplier;
-  moneySpan.innerText = totalMoney.toFixed(2);
-  perClickSpan.innerText = data.coinsPerClick;
-  autoCoinsSpan.innerText = getTotalAutoIncome().toFixed(2);
-  prestigeSpan.innerText = data.prestigeMultiplier;
-  prestigeThresholdSpan.innerText = prestigeThreshold;
-  updateBuildingsUI();
-}
-
-// Calculate total auto income
-function getTotalAutoIncome() {
-  let total = 0;
-  for (const b of buildingTypes) {
-    const bData = data.buildings[b.key];
-    if (bData.unlocked) {
-      total += bData.count * b.rate;
+// Create deck
+function createDeck() {
+    deck = [];
+    for (const suit of SUITS) {
+        for (const rank of RANKS) {
+            let v = (rank === 'A') ? 11 : (['J','Q','K'].includes(rank) ? 10 : parseInt(rank));
+            deck.push({ rank, suit, value: v });
+        }
     }
-  }
-  return total * data.prestigeMultiplier;
+    // Shuffle
+    for (let i = deck.length -1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i+1));
+        [deck[i], deck[j]] = [deck[j], deck[i]];
+    }
 }
 
-// Clicking Dave
-dave.addEventListener('click', () => {
-  data.money += data.coinsPerClick;
-  animateCoins();
-  update();
-});
+// Hand score with Aces handling
+function scoreHand(hand) {
+    let s = hand.reduce((a, c) => a + c.value, 0);
+    let aces = hand.filter(c => c.rank==='A').length;
+    while (s > 21 && aces > 0) {
+        s -= 10;
+        aces--;
+    }
+    return s;
+}
 
-// Animate coins flying
-function animateCoins() {
-  for (let i=0; i<10; i++) {
-    const coin = document.createElement('div');
-    coin.innerText = '🪙';
-    coin.style.position = 'absolute';
-    coin.style.left = dave.offsetLeft + 'px';
-    coin.style.top = dave.offsetTop + 'px';
-    coin.style.fontSize = '24px';
-    coin.style.opacity = 1;
-    document.body.appendChild(coin);
-    const targetX = window.innerWidth*Math.random();
-    const targetY = window.innerHeight*Math.random();
-    const duration = 1000 + Math.random()*500;
-    const startTime = performance.now();
+// Add card to display
+async function addCardToDisplay(target, hand, index, reveal=true) {
+    const container = target === 'player' ? elements.pHand : elements.dHand;
+    const card = hand[index];
+    const el = createCardElement(card, reveal, true);
+    container.appendChild(el);
+    // Update score
+    if (target==='player') {
+        // update score display
+        if(!elements.pScore.parentNode) {
+            elements.pScore = document.createElement('div');
+            document.querySelector('#player-area').appendChild(elements.pScore);
+        }
+        elements.pScore.textContent = 'Score: ' + scoreHand(hand);
+    } else {
+        if(!elements.dScore.parentNode) {
+            elements.dScore = document.createElement('div');
+            document.querySelector('#dealer-area').appendChild(elements.dScore);
+        }
+        // show dealer score only if reveal or game over
+        if (reveal || gameState==='show-result') {
+            elements.dScore.textContent = 'Score: ' + scoreHand(hand);
+        } else {
+            elements.dScore.textContent = '?';
+        }
+    }
+    await sleep(400);
+    el.classList.remove('new-card');
+}
 
-    function animate() {
-      const elapsed = performance.now() - startTime;
-      if (elapsed > duration) {
-        document.body.removeChild(coin);
+// Calculate bet based on slider
+function calculateBet() {
+    const percent = parseInt(elements.betRange.value);
+    let amount = Math.floor(chips * percent/100);
+    if (amount < 10 && chips >= 10) amount = 10;
+    return Math.min(amount, chips);
+}
+
+// Update bet display
+function updateBetDisplay() {
+    const amt = calculateBet();
+    elements.betDisplay.textContent = format(amt);
+    elements.dealBtn.textContent = `DEAL (${format(amt)})`;
+}
+
+// UI updates
+function updateChips() {
+    if (chips > highScore) {
+        highScore = chips;
+        localStorage.setItem('davepokerHighScore', highScore);
+    }
+    document.getElementById('high-score-display').textContent = format(highScore);
+    document.getElementById('chips-display').textContent = format(chips);
+}
+
+// Place bet and deal
+async function placeBet() {
+    if (gameState !== 'waiting') return;
+    const betAmount = calculateBet();
+    if (betAmount > chips || betAmount < 10) {
+        // Not enough chips
+        alert('Not enough chips or invalid bet.');
         return;
-      }
-      const progress = elapsed / duration;
-      coin.style.left = (dave.offsetLeft + (targetX - dave.offsetLeft) * progress) + 'px';
-      coin.style.top = (dave.offsetTop + (targetY - dave.offsetTop) * progress) + 'px';
-      coin.style.opacity = 1 - progress;
-      requestAnimationFrame(animate);
     }
-    animate();
-  }
+    chips -= betAmount;
+    currentBet = betAmount;
+    updateChips();
+
+    // Reset hands
+    playerHand = [];
+    dealerHand = [];
+
+    // Create deck and deal
+    createDeck();
+    document.getElementById('player-hand').innerHTML = '';
+    document.getElementById('dealer-hand').innerHTML = '';
+
+    // Deal initial cards
+    playerHand.push(deck.pop());
+    await addCardToDisplay('player', playerHand, 0);
+    dealerHand.push(deck.pop());
+    await addCardToDisplay('dealer', dealerHand, 0, false); // face down
+    playerHand.push(deck.pop());
+    await addCardToDisplay('player', playerHand, 1);
+    dealerHand.push(deck.pop());
+    await addCardToDisplay('dealer', dealerHand, 1);
+
+    // Show dealer's second card face down
+    // Wait briefly before enabling player actions
+    gameState = 'player-turn';
+    document.getElementById('action-controls').style.display = 'flex';
+    document.getElementById('game-controls').style.display = 'none';
+    document.getElementById('restart-controls').style.display = 'none';
+    document.getElementById('message-box').textContent = 'Your turn: Hit, Stand, or Fold.';
 }
 
-// Buy building
-function buyBuilding(bKey) {
-  const bConfig = buildingTypes.find(b => b.key === bKey);
-  const bData = data.buildings[bKey];
-  if (!bData.unlocked) {
-    alert('This building is locked! Prestige first.');
-    return;
-  }
-  const cost = bData.cost;
-  if (data.money >= cost) {
-    data.money -= cost;
-    bData.count++;
-    bData.cost = Math.round(bData.cost * 1.15);
-    update();
-  } else {
-    alert('Not enough Dave Coins!');
-  }
-}
-
-// UI for buildings
-function updateBuildingsUI() {
-  document.querySelector('#buildings').innerHTML = '';
-  for (const b of buildingTypes) {
-    const bData = data.buildings[b.key];
-    if (bData.unlocked) {
-      const div = document.createElement('div');
-      div.className = 'building';
-      div.innerHTML = `
-        <h3>${b.name}</h3>
-        <div>Owned: ${bData.count}</div>
-        <div>Cost: $${bData.cost}</div>
-        <div>Produces: ${(bData.rate * bData.count)} coins/sec</div>
-        <button onclick="buyBuilding('${b.key}')">Buy ${b.name}</button>
-      `;
-      document.querySelector('#buildings').appendChild(div);
+// Player actions
+async function playerHit() {
+    if (gameState !== 'player-turn') return;
+    playerHand.push(deck.pop());
+    await addCardToDisplay('player', playerHand, playerHand.length - 1);
+    const pScore = scoreHand(playerHand);
+    if (pScore > 21) {
+        endGame('Bust! Dealer wins.');
     }
-  }
 }
 
-// Event listeners for upgrades
-let autoUpgradeCost = 50;
-btnAutoUpgrade.onclick = () => {
-  if (data.money >= autoUpgradeCost) {
-    data.money -= autoUpgradeCost;
-    data.autoCoinsPerSec++;
-    autoUpgradeCost = Math.round(autoUpgradeCost * 1.25);
-    update();
-  } else {
-    alert('Not enough Dave Coins!');
-  }
+async function playerStand() {
+    if (gameState !== 'player-turn') return;
+    gameState = 'dealer-turn';
+    document.getElementById('action-controls').style.display = 'none';
+    document.getElementById('game-controls').style.display = 'none';
+
+    // Reveal dealer's face-down card
+    const container = document.getElementById('dealer-hand');
+    container.innerHTML = '';
+    for (let i=0; i<dealerHand.length; i++) {
+        await addCardToDisplay('dealer', dealerHand, i, true);
+    }
+    // Dealer plays
+    await dealerPlay();
+}
+
+async function dealerPlay() {
+    let dScore = scoreHand(dealerHand);
+    while (dScore < 17) {
+        dealerHand.push(deck.pop());
+        await addCardToDisplay('dealer', dealerHand, dealerHand.length -1, true);
+        dScore = scoreHand(dealerHand);
+        await sleep(600);
+    }
+    // Determine winner
+    const pScore = scoreHand(playerHand);
+    if (dScore > 21 || pScore > dScore) {
+        endGame('You win!');
+    } else if (pScore < dScore) {
+        endGame('Dealer wins.');
+    } else {
+        endGame('Push.');
+    }
+}
+
+function endGame(message) {
+    gameState = 'show-result';
+    document.getElementById('message-box').textContent = message;
+    // Payout
+    if (message.includes('win')) {
+        chips += currentBet * 2;
+    }
+    updateChips();
+    // Show restart button
+    document.getElementById('restart-controls').style.display = 'block';
+    // Hide action buttons
+    document.getElementById('action-controls').style.display = 'none';
+    document.getElementById('game-controls').style.display = 'none';
+}
+
+// Reset for new round
+function resetRound() {
+    gameState = 'waiting';
+    document.getElementById('message-box').textContent = 'Place your bet and press DEAL.';
+    document.getElementById('player-hand').innerHTML = '';
+    document.getElementById('dealer-hand').innerHTML = '';
+    document.getElementById('action-controls').style.display = 'none';
+    document.getElementById('game-controls').style.display = 'none';
+    document.getElementById('restart-controls').style.display = 'none';
+    // Reset bet slider
+    elements.betRange.value = 10;
+    updateBetDisplay();
+}
+
+// Event listeners
+document.getElementById('bet-btn').onclick = placeBet;
+document.getElementById('hit-btn').onclick = playerHit;
+document.getElementById('stand-btn').onclick = playerStand;
+document.getElementById('fold-btn').onclick = () => {
+    endGame('You folded. Dealer wins.');
 };
+document.getElementById('new-round-btn').onclick = resetRound;
 
-btnClickUpgrade.onclick = () => {
-  if (data.money >= 10) {
-    data.money -= 10;
-    // Increase click amount each time
-    data.coinsPerClick += 1;
-    update();
-  } else {
-    alert('Not enough Dave Coins!');
-  }
-};
+elements.betRange.oninput = updateBetDisplay;
+updateBetDisplay();
 
-let currentPrestigeThreshold = prestigeThreshold; // for dynamic increase
-btnPrestige.onclick = () => {
-  if (data.money >= prestigeThreshold) {
-    const gainedMultiplier = Math.floor(data.money / prestigeThreshold);
-    data.prestigeMultiplier += gainedMultiplier;
-    data.prestigeCount += gainedMultiplier;
-
-    // Reset progress
-    data.money = 0;
-    data.coinsPerClick = 1;
-    data.autoCoinsPerSec = 0;
-
-    // Reset buildings
-    for (const b of Object.keys(data.buildings)) {
-      data.buildings[b].count = 0;
-    }
-
-    // Increase prestige threshold for next time
-    prestigeThreshold = Math.round(prestigeThreshold * 1.5);
-    update();
-  } else {
-    alert(`Earn at least ${prestigeThreshold} Dave Coins to prestige.`);
-  }
-};
-
-// Auto coins per second
-setInterval(() => {
-  let totalAuto = 0;
-  for (const b of buildingTypes) {
-    const bData = data.buildings[b.key];
-    if (bData.unlocked) {
-      totalAuto += bData.count * b.rate;
-    }
-  }
-  data.money += totalAuto * data.prestigeMultiplier;
-  update();
-}, 1000);
-
-// Unlock buildings based on prestige count
-function checkBuildingUnlocks() {
-  for (const b of buildingTypes) {
-    if (b.unlockPrestige <= data.prestigeCount) {
-      data.buildings[b.key].unlocked = true;
-    }
-  }
-}
-
-// Reset game function
-function resetGame() {
-  localStorage.removeItem('daveCoinsData');
-  // Reload page to start fresh
-  location.reload();
-}
-
-// Load from local storage
-function load() {
-  if (localStorage.getItem('daveCoinsData')) {
-    data = JSON.parse(localStorage.getItem('daveCoinsData'));
-  }
-}
-load();
-checkBuildingUnlocks();
-update();
-
-// Save periodically
-setInterval(() => {
-  save();
-  checkBuildingUnlocks();
-}, 5000);
-
-// Reset button event
-document.getElementById('resetButton').onclick = () => {
-  if (confirm('Are you sure you want to reset the game?')) {
-    resetGame();
-  }
+window.onload = () => {
+    let storedHigh = localStorage.getItem('davepokerHighScore');
+    highScore = storedHigh ? parseInt(storedHigh) : 2000;
+    updateChips();
+    resetRound();
 };
 </script>
-
 </body>
 </html>
