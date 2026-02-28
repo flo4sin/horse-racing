@@ -3,97 +3,196 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Texas Hold'em Pro</title>
+
+<title>Casino Hold'em</title>
+
 <script src="https://cdn.tailwindcss.com"></script>
 
 <style>
 
 body{
-background:#1a202c;
+background:
+radial-gradient(circle at center,#0f172a,#020617);
+font-family:Inter,system-ui;
 color:white;
-font-family:Arial;
 display:flex;
 justify-content:center;
 align-items:center;
 height:100vh;
 }
 
-#game{
-width:1000px;
-background:#2d3748;
-padding:15px;
-border-radius:12px;
-box-shadow:0 0 40px black;
-}
+/* TABLE */
 
 .table{
-background:radial-gradient(circle,#3f7f5d,#2c5e46);
-padding:20px;
-border-radius:16px;
-min-height:350px;
+width:900px;
+height:520px;
+background:
+radial-gradient(circle at center,#2f855a,#1b4332);
+border-radius:260px;
+border:8px solid #3a2a12;
+position:relative;
+box-shadow:
+inset 0 0 60px rgba(0,0,0,.7),
+0 0 80px black;
 }
+
+/* PLAYER AREAS */
+
+.player{
+position:absolute;
+text-align:center;
+transition:.3s;
+}
+
+.active{
+filter:drop-shadow(0 0 12px gold);
+transform:scale(1.05);
+}
+
+/* POSITIONS */
+
+#p0{bottom:10px;left:50%;transform:translateX(-50%);}
+#p1{top:10px;left:50%;transform:translateX(-50%);}
+#p2{left:10px;top:50%;transform:translateY(-50%);}
+#p3{right:10px;top:50%;transform:translateY(-50%);}
+
+/* CARD */
 
 .card{
 width:70px;
 height:100px;
 background:white;
+border-radius:10px;
 color:black;
-border-radius:8px;
 display:inline-flex;
 flex-direction:column;
 justify-content:space-between;
-padding:5px;
-margin:4px;
+padding:6px;
+margin:3px;
+font-weight:900;
+box-shadow:0 4px 12px black;
+animation:deal .3s ease;
+}
+
+.red{color:#dc2626;}
+
+.cardBack{
+background:
+linear-gradient(135deg,#1e40af,#1d4ed8);
+border:2px solid white;
+}
+
+@keyframes deal{
+from{
+transform:translateY(-40px);
+opacity:0;
+}
+}
+
+/* COMMUNITY */
+
+.community{
+position:absolute;
+top:50%;
+left:50%;
+transform:translate(-50%,-50%);
+}
+
+/* POT */
+
+.pot{
+position:absolute;
+top:50%;
+left:50%;
+transform:translate(-50%,60px);
+text-align:center;
+}
+
+.chips{
+width:70px;
+height:70px;
+border-radius:50%;
+background:
+radial-gradient(circle,#fde047,#ca8a04);
+box-shadow:
+0 0 20px gold,
+inset 0 0 10px rgba(0,0,0,.5);
+display:flex;
+justify-content:center;
+align-items:center;
+color:black;
 font-weight:bold;
 }
 
-.red{color:#cc0000;}
+/* BUTTONS */
 
-.cardBack{
-background:linear-gradient(135deg,#1e3a8a,#2563eb);
+.controls{
+margin-top:15px;
+display:grid;
+grid-template-columns:repeat(4,1fr);
+gap:10px;
 }
 
 .btn{
-padding:10px;
-border-radius:8px;
+padding:12px;
+border-radius:10px;
 font-weight:bold;
+box-shadow:0 4px 15px black;
+transition:.15s;
+}
+
+.btn:active{
+transform:scale(.92);
 }
 
 .glow{
-box-shadow:0 0 15px gold;
+box-shadow:
+0 0 10px gold,
+0 0 25px gold;
+border:2px solid gold;
+}
+
+/* INFO */
+
+.topbar{
+width:900px;
+display:flex;
+justify-content:space-between;
+margin-bottom:8px;
+font-weight:bold;
 }
 
 </style>
 </head>
 <body>
 
-<div id="game">
+<div>
 
-<h1 class="text-3xl text-yellow-400 font-bold text-center">
-TEXAS HOLD'EM PRO
-</h1>
+<div class="topbar">
 
-<div class="flex justify-between bg-gray-800 p-2 rounded">
-
-<div>Your Chips: $<span id="yourChips"></span></div>
-<div id="turn"></div>
+<div>Your Chips: $<span id="chips"></span></div>
+<div id="turnText"></div>
 <div>High: $<span id="high"></span></div>
 
 </div>
 
-<div class="table mt-2 text-center">
+<div class="table">
 
-<div>
-POT: $<span id="pot"></span>
+<div class="community" id="community"></div>
+
+<div class="pot">
+<div class="chips" id="pot">$0</div>
+POT
 </div>
 
-<div id="community"></div>
-
-<div id="players"></div>
+<div id="p0" class="player"></div>
+<div id="p1" class="player"></div>
+<div id="p2" class="player"></div>
+<div id="p3" class="player"></div>
 
 </div>
 
-<div class="grid grid-cols-4 gap-2 mt-3">
+<div class="controls">
 
 <button id="betBtn" class="btn bg-green-600">BET</button>
 <button id="callBtn" class="btn bg-blue-600">CALL</button>
@@ -102,24 +201,21 @@ POT: $<span id="pot"></span>
 
 </div>
 
-<div id="message" class="mt-3 text-yellow-300 font-bold"></div>
+<div id="msg" class="mt-2 text-yellow-300 font-bold"></div>
 
 </div>
 
 <script>
 
-/* ---------- CONFIG ---------- */
+/* ---------- DATA ---------- */
 
 const suits=["♠","♥","♦","♣"]
 const ranks=["2","3","4","5","6","7","8","9","10","J","Q","K","A"]
 
-const botNames=[
-"Liam","Noah","Mason","Logan","Lucas","Ethan","Aiden",
-"Zane","Kai","Axel","Blaze","Ryder","Cole","Jax",
-"Knox","Chase","Leo","Ivan","Nash","Zeke"
+const names=[
+"Liam","Kai","Ryder","Axel","Zane","Knox","Leo",
+"Blaze","Jax","Cole","Ivan","Nash","Chase","Milo"
 ]
-
-/* ---------- STATE ---------- */
 
 let deck=[]
 let players=[]
@@ -127,30 +223,36 @@ let community=[]
 let pot=0
 let turn=0
 let phase=0
-let betAmount=100
-let actionLock=false
+let bet=100
+let lock=false
 let high=2000
 
 /* ---------- ELEMENTS ---------- */
 
-const yourChipsEl=document.getElementById("yourChips")
+const chipsEl=document.getElementById("chips")
 const potEl=document.getElementById("pot")
-const playersEl=document.getElementById("players")
 const commEl=document.getElementById("community")
-const turnEl=document.getElementById("turn")
-const msgEl=document.getElementById("message")
+const msgEl=document.getElementById("msg")
+const turnEl=document.getElementById("turnText")
 const highEl=document.getElementById("high")
+
+const buttons=[
+betBtn,
+callBtn,
+checkBtn,
+foldBtn
+]
 
 /* ---------- UTILS ---------- */
 
-function shuffle(array){
+function shuffle(a){
 
-for(let i=array.length-1;i>0;i--){
+for(let i=a.length-1;i>0;i--){
 
 let j=Math.floor(Math.random()*(i+1))
-let t=array[i]
-array[i]=array[j]
-array[j]=t
+let t=a[i]
+a[i]=a[j]
+a[j]=t
 
 }
 
@@ -170,20 +272,13 @@ shuffle(deck)
 
 function draw(){return deck.pop()}
 
-function randomName(){
-
-return botNames[Math.floor(Math.random()*botNames.length)]
-
-}
-
 function cardHTML(c){
 
-if(!c)
-return `<div class="card cardBack"></div>`
+if(!c)return `<div class="card cardBack"></div>`
 
 let red=(c.s=="♥"||c.s=="♦")?"red":""
 
-return `
+return`
 <div class="card ${red}">
 <div>${c.r}</div>
 <div>${c.s}</div>
@@ -195,44 +290,15 @@ ${c.r}
 
 }
 
-/* ---------- HAND EVALUATION ---------- */
+function randomName(){
 
-function rankValue(r){
-
-return ranks.indexOf(r)+2
+return names[Math.floor(Math.random()*names.length)]
 
 }
 
-function evaluateHand(cards){
+function message(t){
 
-let values=cards.map(c=>rankValue(c.r)).sort((a,b)=>b-a)
-
-let counts={}
-values.forEach(v=>counts[v]=(counts[v]||0)+1)
-
-let pairs=Object.values(counts)
-
-let flush=cards.every(c=>c.s==cards[0].s)
-
-let straight=false
-
-for(let i=0;i<values.length-4;i++){
-
-if(values[i]-values[i+4]==4)
-straight=true
-
-}
-
-if(straight&&flush)return 8
-if(pairs.includes(4))return 7
-if(pairs.includes(3)&&pairs.includes(2))return 6
-if(flush)return 5
-if(straight)return 4
-if(pairs.includes(3))return 3
-if(pairs.filter(x=>x==2).length>=2)return 2
-if(pairs.includes(2))return 1
-
-return 0
+msgEl.innerText=t
 
 }
 
@@ -240,15 +306,18 @@ return 0
 
 function render(){
 
-yourChipsEl.innerText=players[0].chips
-potEl.innerText=pot
+chipsEl.innerText=players[0].chips
+potEl.innerText="$"+pot
 highEl.innerText=high
 
-commEl.innerHTML=community.map(cardHTML).join("")
-
-let html=""
+commEl.innerHTML=
+community.map(cardHTML).join("")
 
 players.forEach((p,i)=>{
+
+let div=document.getElementById("p"+i)
+
+div.classList.toggle("active",turn==i)
 
 let hand=""
 
@@ -257,23 +326,30 @@ hand=p.hand.map(cardHTML).join("")
 else
 hand=cardHTML()+cardHTML()
 
-html+=`
-<div>
-${p.name} ($${p.chips}) ${p.fold?"FOLDED":""}
-<br>
-${hand}
-</div>
+div.innerHTML=`
+<div>${p.name}</div>
+<div>$${p.chips}</div>
+<div>${hand}</div>
 `
 
 })
 
-playersEl.innerHTML=html
+}
+
+/* ---------- GLOW ---------- */
+
+function glow(on){
+
+buttons.forEach(b=>b.classList.remove("glow"))
+
+if(on)
+buttons.forEach(b=>b.classList.add("glow"))
 
 }
 
-/* ---------- GAME FLOW ---------- */
+/* ---------- GAME ---------- */
 
-function startRound(){
+function start(){
 
 makeDeck()
 
@@ -288,15 +364,87 @@ players=[
 
 {name:randomName(),chips:2000,hand:[draw(),draw()],fold:false},
 
+{name:randomName(),chips:2000,hand:[draw(),draw()],fold:false},
+
 {name:randomName(),chips:2000,hand:[draw(),draw()],fold:false}
 
 ]
 
 render()
+playerTurn()
+
+}
+
+/* ---------- TURN ---------- */
+
+function playerTurn(){
+
+if(players[turn].fold){
+nextTurn()
+return
+}
+
+if(turn==0){
+
+lock=false
+turnEl.innerText="YOUR TURN"
+glow(true)
+
+}else{
+
+glow(false)
+
+turnEl.innerText=
+players[turn].name+" thinking..."
+
+setTimeout(botMove,900)
+
+}
+
+render()
+
+}
+
+function nextTurn(){
+
+turn++
+
+if(turn>=players.length){
+
+nextPhase()
+return
+
+}
 
 playerTurn()
 
 }
+
+/* ---------- BOT ---------- */
+
+function botMove(){
+
+let p=players[turn]
+
+if(Math.random()<.3){
+
+p.fold=true
+message(p.name+" folds")
+
+}else{
+
+p.chips-=bet
+pot+=bet
+message(p.name+" bets")
+
+}
+
+render()
+nextTurn()
+
+}
+
+/* ---------- PHASE ---------- */
 
 function nextPhase(){
 
@@ -317,137 +465,7 @@ return
 }
 
 turn=0
-render()
 playerTurn()
-
-}
-
-function playerTurn(){
-
-if(players[turn].fold){
-nextTurn()
-return
-}
-
-if(turn==0){
-
-turnEl.innerText="Your turn"
-actionLock=false
-
-}else{
-
-botAction()
-
-}
-
-}
-
-function nextTurn(){
-
-turn++
-
-if(turn>=players.length){
-
-nextPhase()
-return
-
-}
-
-playerTurn()
-
-}
-
-/* ---------- PLAYER ACTIONS ---------- */
-
-document.getElementById("betBtn").onclick=()=>{
-
-if(actionLock)return
-actionLock=true
-
-let p=players[0]
-
-if(p.chips<betAmount)return
-
-p.chips-=betAmount
-pot+=betAmount
-
-msg("You bet")
-
-nextTurn()
-render()
-
-}
-
-document.getElementById("callBtn").onclick=()=>{
-
-if(actionLock)return
-actionLock=true
-
-let p=players[0]
-
-p.chips-=betAmount
-pot+=betAmount
-
-msg("You call")
-
-nextTurn()
-render()
-
-}
-
-document.getElementById("checkBtn").onclick=()=>{
-
-if(actionLock)return
-actionLock=true
-
-msg("You check")
-
-nextTurn()
-
-}
-
-document.getElementById("foldBtn").onclick=()=>{
-
-if(actionLock)return
-actionLock=true
-
-players[0].fold=true
-
-msg("You fold")
-
-nextTurn()
-render()
-
-}
-
-/* ---------- BOT AI ---------- */
-
-function botAction(){
-
-let p=players[turn]
-
-turnEl.innerText=p.name+" thinking..."
-
-setTimeout(()=>{
-
-if(Math.random()<0.25){
-
-p.fold=true
-msg(p.name+" folds")
-
-}else{
-
-p.chips-=betAmount
-pot+=betAmount
-msg(p.name+" bets")
-
-}
-
-render()
-
-nextTurn()
-
-},1000)
 
 }
 
@@ -457,48 +475,84 @@ function showdown(){
 
 phase=4
 
-let best=-1
-let winner=null
-
-players.forEach(p=>{
-
-if(p.fold)return
-
-let score=evaluateHand([...p.hand,...community])
-
-if(score>best){
-
-best=score
-winner=p
-
-}
-
-})
+let winner=
+players.filter(p=>!p.fold)
+[Math.floor(Math.random()*players.length)]
 
 winner.chips+=pot
 
-if(winner.name=="YOU" && winner.chips>high){
+if(winner.name=="YOU" &&
+winner.chips>high){
 
 high=winner.chips
-localStorage.setItem("pokerHigh",high)
+localStorage.setItem("casinoHigh",high)
 
 }
 
-msg(winner.name+" wins $"+pot)
+message(winner.name+" wins "+pot)
 
 pot=0
 
 render()
 
-setTimeout(startRound,3000)
+setTimeout(start,3000)
 
 }
 
-/* ---------- MESSAGE ---------- */
+/* ---------- BUTTONS ---------- */
 
-function msg(t){
+betBtn.onclick=()=>{
 
-msgEl.innerText=t
+if(lock)return
+lock=true
+
+players[0].chips-=bet
+pot+=bet
+
+message("You bet")
+
+nextTurn()
+render()
+
+}
+
+callBtn.onclick=()=>{
+
+if(lock)return
+lock=true
+
+players[0].chips-=bet
+pot+=bet
+
+message("You call")
+
+nextTurn()
+render()
+
+}
+
+checkBtn.onclick=()=>{
+
+if(lock)return
+lock=true
+
+message("You check")
+
+nextTurn()
+
+}
+
+foldBtn.onclick=()=>{
+
+if(lock)return
+lock=true
+
+players[0].fold=true
+
+message("You fold")
+
+nextTurn()
+render()
 
 }
 
@@ -506,10 +560,12 @@ msgEl.innerText=t
 
 window.onload=()=>{
 
-let saved=localStorage.getItem("pokerHigh")
-if(saved)high=parseInt(saved)
+let save=
+localStorage.getItem("casinoHigh")
 
-startRound()
+if(save)high=parseInt(save)
+
+start()
 
 }
 
