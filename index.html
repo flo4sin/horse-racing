@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Dave Coins - Idle Clicker Game</title>
 <style>
+/* ... [Same styles as before, with some adjustments for images] ... */
 body {
   background: linear-gradient(to right, #ffcc00, #ff6600);
   font-family: 'Arial', sans-serif;
@@ -69,11 +70,19 @@ h1 {
   padding: 10px;
   margin: 10px;
   flex: 1 1 250px;
-  max-width: 300px;
+  max-width: 350px;
   box-shadow: inset 0 0 10px rgba(255,255,255,0.3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 .building h3 {
   margin-top: 0;
+}
+.building img {
+  max-width: 150px;
+  margin: 10px 0;
+  border-radius: 8px;
 }
 #achievements {
   margin-top: 30px;
@@ -138,7 +147,7 @@ h1 {
 
 <div id="buildings"></div>
 
-<div style="text-align: center; margin-top:20px;">
+<div style="text-align:center; margin-top:20px;">
   <button id="maxBuy">Buy Max Buildings</button>
   <button id="resetBtn">Reset Progress</button>
 </div>
@@ -152,7 +161,7 @@ h1 {
 <h2>Achievements</h2>
 <div id="achievements"></div>
 
-<!-- Notification container -->
+<!-- Notifications -->
 <div id="notifications"></div>
 
 <script>
@@ -197,8 +206,8 @@ const achievementsDiv = document.getElementById('achievements');
 const notificationsDiv = document.getElementById('notifications');
 
 const buildingTypes = [
-  { key: 'farmer', name: 'Amish Farmer', baseCost: 10, rate: 1 },
-  { key: 'tractor', name: 'Bright Orange Tractor', baseCost: 100, rate: 10 },
+  { key: 'farmer', name: 'Amish Farmer', baseCost: 10, rate: 1, image: 'https://images.unsplash.com/photo-1602702266804-3d7d49f0cc02?ixlib=rb-4.0.4&auto=format&fit=crop&w=200&q=80' },
+  { key: 'tractor', name: 'Bright Orange Tractor', baseCost: 100, rate: 10, image: 'https://images.unsplash.com/photo-1606208555504-1d9513d2f89f?ixlib=rb-4.0.4&auto=format&fit=crop&w=200&q=80' },
 ];
 
 // Save/load functions
@@ -206,26 +215,18 @@ function save() { localStorage.setItem('daveCoinsData', JSON.stringify(data)); }
 function load() { if (localStorage.getItem('daveCoinsData')) { data = JSON.parse(localStorage.getItem('daveCoinsData')); } }
 load();
 
-// Get total coins
+// Utility
 function getTotalCoins() {
   return data.money * data.prestigeMultiplier;
 }
 
 // Update display
 function update() {
-  // Update stats
   document.getElementById('money').innerText = getTotalCoins().toFixed(2);
   document.getElementById('perClick').innerText = data.coinsPerClick;
   document.getElementById('autoCoins').innerText = getTotalAutoIncome().toFixed(2);
   document.getElementById('prestigeMultiplier').innerText = data.prestigeMultiplier;
   document.getElementById('bonusPercent').innerText = data.bonusPercent;
-
-  // Update progress bar (auto coins/sec)
-  const autoIncome = getTotalAutoIncome();
-  const maxAuto = 100; // for demo, max 100 auto/sec
-  const widthPercent = Math.min(autoIncome / maxAuto * 100, 100);
-  document.getElementById('progressBar').style.width = widthPercent + '%';
-
   updateBuildingsUI();
   updateAchievements();
 }
@@ -277,9 +278,8 @@ function animateCoins() {
 function buyBuilding(bKey) {
   const bConfig = buildingTypes.find(b => b.key === bKey);
   const bData = data.buildings[bKey];
-  const cost = bData.cost;
-  if (data.money >= cost) {
-    data.money -= cost;
+  if (data.money >= bData.cost) {
+    data.money -= bData.cost;
     bData.count++;
     bData.cost = Math.round(bData.cost * 1.15);
     update();
@@ -288,7 +288,7 @@ function buyBuilding(bKey) {
   }
 }
 
-// Max buy buildings
+// Buy max buildings
 function buyMaxBuildings() {
   for (const b of buildingTypes) {
     const bData = data.buildings[b.key];
@@ -298,7 +298,7 @@ function buyMaxBuildings() {
   }
 }
 
-// Update buildings UI
+// Update UI
 function updateBuildingsUI() {
   const container = document.querySelector('#buildings');
   container.innerHTML = '';
@@ -308,6 +308,7 @@ function updateBuildingsUI() {
     div.className = 'building';
     div.innerHTML = `
       <h3>${b.name}</h3>
+      <img src="${b.image}" alt="${b.name}">
       <div>Owned: ${bData.count}</div>
       <div>Cost: $${bData.cost}</div>
       <div>Produces: ${(bData.count * b.rate)} coins/sec</div>
@@ -336,7 +337,7 @@ function checkAchievements() {
   }
 }
 
-// Update achievements display
+// Update achievements UI
 function updateAchievements() {
   achievementsDiv.innerHTML = '';
   for (const ach of achievementsList) {
@@ -401,7 +402,7 @@ document.getElementById('maxBuy').onclick = () => {
   update();
 };
 
-// Auto coins production
+// Auto coins per sec
 setInterval(() => {
   const totalAuto = getTotalAutoIncome();
   if (totalAuto > 0) {
@@ -410,7 +411,7 @@ setInterval(() => {
   }
 }, 1000);
 
-// Load and start
+// Load
 load();
 update();
 setInterval(save, 5000);
