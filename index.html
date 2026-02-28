@@ -2,387 +2,452 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Black Dave's Horse Racing</title>
-<!-- Tailwind CDN -->
-<script src="https://cdn.tailwindcss.com"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Dave's Horse Racing</title>
 <style>
-  body {
-    font-family: 'Inter', sans-serif;
-    background-color: #1a202c;
-    color: #e2e8f0;
-    margin: 0;
-    padding: 0;
-  }
-  a.back-hub {
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    padding: 10px 15px;
-    background: #333;
-    color: #ffd700;
-    border-radius: 5px;
-    font-weight: bold;
-    border: 1px solid #ffd700;
-    z-index: 9999;
-  }
-  a.back-hub:hover {
-    background: #ffd700;
-    color: #000;
-  }
-  #game-container {
-    max-width: 800px;
-    margin: 80px auto 20px auto;
+body { 
+    background: radial-gradient(circle, #1a3c1a 0%, #0a1a0a 100%); 
+    color: #fff; font-family: 'Segoe UI', sans-serif; 
+    text-align: center; margin: 0; padding: 10px; 
+    overflow-x: hidden;
+}
+.back-hub {
+    position: relative; display: inline-block; margin: 10px 0 20px 0;
+    padding: 10px 15px; background: #333; color: #ffd700;
+    text-decoration: none; border-radius: 5px; font-weight: bold;
+    border: 1px solid #ffd700; z-index: 9999; transition: 0.3s;
+}
+@media (min-width: 768px) {
+    .back-hub { position: absolute; top: 20px; left: 20px; margin: 0; }
+}
+.back-hub:hover { background: #ffd700; color: #000; box-shadow: 0 0 10px #ffd700; }
+.casino-header { 
+    text-shadow: 0 0 10px #ffd700; border-bottom: 2px solid #ffd700; 
+    display: inline-block; padding-bottom: 10px; margin-bottom: 20px; 
+    font-size: 1.5rem;
+}
+/* Container for the canvas to help position the overlay */
+.game-container {
     position: relative;
-  }
-  #raceTrack {
-    background: #2d3748;
-    border: 8px solid #3e2723;
-    border-radius: 20px;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.8);
-    width: 100%;
-    height: 180px; /* smaller height for compact display */
-  }
-  #resultOverlay {
+    margin: 0 auto;
+    max-width: 1000px;
+}
+canvas { 
+    background: #2e7d32; border: 8px solid #3e2723; border-radius: 40px; 
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8); margin: 0 auto; 
+    display: block; width: 100%; height: auto;
+}
+/* NEW: Custom Result Overlay */
+#resultOverlay {
     position: absolute;
     top: 50%; left: 50%;
     transform: translate(-50%, -50%);
-    background: rgba(0,0,0,0.95);
+    background: rgba(0, 0, 0, 0.95);
     border: 4px solid #ffd700;
     border-radius: 20px;
     padding: 30px;
     width: 80%;
     max-width: 400px;
-    display: none;
+    display: none; /* Hidden by default */
     z-index: 100;
     box-shadow: 0 0 50px rgba(0,0,0,1);
-  }
-  #resultTitle { font-size: 28px; margin-bottom: 10px; text-transform: uppercase; }
-  #resultMessage { font-size: 18px; margin-bottom: 20px; }
-  .win-text { color: #ffd700; text-shadow: 0 0 10px #ffd700; }
-  .lose-text { color: #ff4444; }
-  #betPanel {
-    background: rgba(0,0,0,0.9);
-    border: 2px solid #ffd700;
-    border-radius: 15px;
-    padding: 15px;
-    max-width: 600px;
-    margin: 20px auto;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 15px;
-  }
-  #betSlider { width: 80%; }
-  #placeBetBtn {
-    background: linear-gradient(#ffd700, #b8860b);
-    color: #000;
-    font-weight: bold;
-    padding: 15px 25px;
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
-    width: 100%;
-    max-width: 200px;
-    font-size: 16px;
-  }
-  #resetBtn {
+}
+#resultTitle { font-size: 28px; margin-bottom: 10px; text-transform: uppercase; }
+#resultMessage { font-size: 18px; margin-bottom: 20px; }
+.win-text { color: #ffd700; text-shadow: 0 0 10px #ffd700; }
+.lose-text { color: #ff4444; }
+/* UI Panel for bet controls and new buttons */
+.ui-panel { 
+    background: rgba(0,0,0,0.9); border: 2px solid #ffd700; border-radius: 15px; 
+    padding: 15px; margin: 20px auto; max-width: 600px; 
+    display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 15px;
+}
+.balance-box { font-size: 20px; color: #ffd700; font-weight: bold; min-width: 100px; }
+select { 
+    padding: 12px; border-radius: 8px; font-weight: bold; outline: none; 
+    cursor: pointer; background: #fff; flex-grow: 1; max-width: 200px;
+}
+select:disabled { background: #666; color: #ccc; cursor: not-allowed; }
+button { 
+    background: linear-gradient(#ffd700, #b8860b); color: #000; font-weight: bold; 
+    padding: 15px 25px; border-radius: 8px; border: none; cursor: pointer; 
+    box-shadow: 0 4px 0 #8b6d00; outline: none; font-size: 16px;
+}
+button:active { transform: translateY(2px); box-shadow: 0 2px 0 #8b6d00; }
+button:disabled { background: #555; color: #888; box-shadow: none; cursor: not-allowed; }
+/* Reset button style closer to bet controls */
+#resetBtn {
     margin-top: 10px;
     padding: 10px 20px;
-    background: #555;
-    color: #fff;
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
+    background: #555; color: #fff; border-radius: 8px; border: none; cursor: pointer;
     font-weight: bold;
-  }
-  #resetBtn:hover {
-    background: #ffd700;
-    color: #000;
-  }
-  .tip {
-    margin-top: 10px;
-    font-size: 12px;
-    color: #aaa;
-  }
-  #highscoreBox {
+}
+#resetBtn:hover {
+    background: #ffd700; color: #000;
+}
+.hint { margin-top: 10px; color: #aaa; font-size: 12px; }
+/* Highscore display style (improved) */
+#highscoreDisplay {
     margin-top: 20px;
-    font-size: 24px;
-    font-weight: bold;
+    font-size: 24px; /* Bigger font for prominence */
     color: #ffd700;
+    font-weight: bold;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
     border: 3px solid #ffd700;
     border-radius: 10px;
     padding: 12px;
     background: rgba(0,0,0,0.5);
-    max-width: 400px;
-    margin-left: auto;
-    margin-right: auto;
-    box-shadow: 0 0 10px #ffd700;
     text-align: center;
-  }
+    box-shadow: 0 0 10px #ffd700;
+}
+@media (max-width: 480px) {
+    .ui-panel { flex-direction: column; }
+    select { max-width: 100%; width: 100%; }
+    button { width: 100%; }
+    #resetBtn { width: 100%; }
+}
 </style>
 </head>
 <body>
 
 <a href="https://davescasino.github.io/davescasino" class="back-hub">⬅ Back to Hub</a>
 
-<h1 class="text-4xl font-black text-center text-yellow-400 mt-20 mb-4">BLACK DAVE HORSE RACING</h1>
+<h1 class="casino-header">Dave's Horse Racing</h1>
 
-<div id="highscoreBox">Highscore: 0</div>
-<div style="margin-top:10px; display:flex; justify-content:center;">
-  <button id="resetBtn">Reset Game</button>
+<!-- Highscore display -->
+<div id="highscoreDisplay">Highscore: 0</div>
+
+<!-- Reset button closer to bet controls -->
+<div style="margin-top:10px; display:flex; justify-content:center; gap:10px;">
+    <button id="resetBtn">Reset Game</button>
 </div>
 
-<!-- Canvas container -->
-<div id="canvasContainer" style="position:relative; margin-top:20px;">
-  <canvas id="raceTrack" width="800" height="180"></canvas>
-  <!-- Result overlay -->
-  <div id="resultOverlay" class="flex items-center justify-center">
-    <div class="text-center">
-      <div id="resultTitle"></div>
-      <div id="resultMessage" class="mt-2"></div>
-      <button id="continueBtn" class="mt-4 px-4 py-2 bg-yellow-500 rounded font-bold hover:bg-yellow-600">CONTINUE</button>
+<div class="game-container">
+    <canvas id="raceTrack" width="1000" height="500"></canvas>
+    <div id="resultOverlay">
+        <div id="resultTitle">Winner!</div>
+        <div id="resultMessage">Horse #3 took the gold.</div>
+        <button id="closeOverlayBtn">CONTINUE</button>
+        <div class="hint" style="margin-top:15px">(Or Press Space)</div>
     </div>
-  </div>
 </div>
 
 <!-- Bet controls -->
-<div id="betPanel">
-  <div class="flex flex-col items-center w-full mb-4">
-    <div class="text-3xl font-extrabold text-yellow-300 mb-2">BET AMOUNT</div>
-    <div id="betAmountDisplay">$10</div>
-    <input type="range" id="betSlider" min="1" max="1000" value="10" />
-  </div>
-  <div class="flex flex-col items-center w-full mb-4">
-    <div class="mb-2">Select Horse:</div>
+<div class="ui-panel" style="margin-top: 10px;">
+    <label for="betAmount" style="margin-right:8px;">Bet Amount ($):</label>
+    <input type="number" id="betAmount" min="1" max="1000" value="10" style="width:80px; padding:8px; font-size:14px;">
+    <div class="balance-box">💰 <span id="balance">2000</span></div>
     <select id="horseSelect">
-      <option value="0">#1 Red Rocket</option>
-      <option value="1">#2 Blue Bolt</option>
-      <option value="2">#3 Gold Gallop</option>
-      <option value="3">#4 Silver Streak</option>
-      <option value="4">#5 Purple Power</option>
+        <option value="0">#1 Red Rocket</option>
+        <option value="1">#2 Blue Bolt</option>
+        <option value="2">#3 Gold Gallop</option>
+        <option value="3">#4 Silver Streak</option>
+        <option value="4">#5 Purple Power</option>
     </select>
-  </div>
-  <div class="flex justify-center w-full mb-4">
-    <button id="placeBetBtn">PLACE BET</button>
-  </div>
-  <div class="tip text-center mt-2">Tip: Use slider to select bet amount. Press SPACE to Bet/Confirm.</div>
+    <button id="startBtn">PLACE BET</button>
 </div>
+<div class="hint">Tip: Press <b>SPACEBAR</b> to Bet/Confirm</div>
 
 <script>
+// Basic setup
 const canvas = document.getElementById('raceTrack');
 const ctx = canvas.getContext('2d');
+const startBtn = document.getElementById('startBtn');
+const horseSelect = document.getElementById('horseSelect');
+const balanceEl = document.getElementById('balance');
+const betAmountInput = document.getElementById('betAmount');
 
-const highscoreBox = document.getElementById('highscoreBox');
-const resetBtn = document.getElementById('resetBtn');
 const resultOverlay = document.getElementById('resultOverlay');
 const resultTitle = document.getElementById('resultTitle');
 const resultMessage = document.getElementById('resultMessage');
-const continueBtn = document.getElementById('continueBtn');
+const closeOverlayBtn = document.getElementById('closeOverlayBtn');
 
-const betSlider = document.getElementById('betSlider');
-const betAmountDisplay = document.getElementById('betAmountDisplay');
-const horseSelect = document.getElementById('horseSelect');
-const placeBetBtn = document.getElementById('placeBetBtn');
+const resetBtn = document.getElementById('resetBtn');
+const highscoreDisplay = document.getElementById('highscoreDisplay');
 
-let balance = 2000;
-let highscore = localStorage.getItem('highscore') || 0;
-highscore = parseInt(highscore);
-if (isNaN(highscore)) highscore = 0;
-highscoreBox.innerText = 'Highscore: ' + highscore;
+let balance = 2000; // Starting amount
+let highscore = localStorage.getItem('horseHighscore') || 0;
+highscoreDisplay.innerText = 'Highscore: ' + highscore;
 
 let racing = false;
 let overlayVisible = false;
 let startTime = null;
-let canBet = true;
-const raceDuration = 10000; // shorter for faster races
+let canBet = true; 
+const raceDuration = 12000;
 
 const horseData = [
-  { id: 0, color: '#ff4444', label: '1' },
-  { id: 1, color: '#4444ff', label: '2' },
-  { id: 2, color: '#ffd700', label: '3' },
-  { id: 3, color: '#ffffff', label: '4' },
-  { id: 4, color: '#bb44ff', label: '5' }
+    { id: 0, color: '#ff4444', label: '1' },
+    { id: 1, color: '#4444ff', label: '2' },
+    { id: 2, color: '#ffd700', label: '3' },
+    { id: 3, color: '#ffffff', label: '4' },
+    { id: 4, color: '#bb44ff', label: '5' }
 ];
 
 let horses = [];
-let currentBet = 10;
+let currentBetAmount = 10;
 
 function initHorses() {
-  horses = horseData.map((h, i) => ({
-    ...h,
-    angle: 1.5 * Math.PI,
-    rx: 300 + (i * 30),
-    ry: 60 + (i * 20),
-    phaseShift: Math.random() * 10,
-    speedMult: 0.985 + (Math.random() * 0.03)
-  }));
+    horses = horseData.map((h, i) => ({
+        ...h,
+        angle: 1.5 * Math.PI,
+        rx: 300 + (i * 30), 
+        ry: 120 + (i * 25),
+        phaseShift: Math.random() * 10,
+        speedMult: 0.985 + (Math.random() * 0.035) 
+    }));
 }
-initHorses();
 
+// Draw track
 function drawTrack() {
-  ctx.fillStyle = "#5d4037";
-  ctx.beginPath();
-  ctx.ellipse(400, 90, 350, 90, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.strokeStyle = "rgba(255,255,255,0.1)";
-  ctx.lineWidth = 2;
-  for (let i=0; i<4; i++) {
-    ctx.beginPath();
-    ctx.ellipse(400, 90, 250 + i*20, 80 + i*10, 0, 0, Math.PI * 2);
-    ctx.stroke();
-  }
-  ctx.strokeStyle = "#fff";
-  ctx.lineWidth = 8;
-  ctx.beginPath();
-  ctx.moveTo(400, 5);
-  ctx.lineTo(400, 130);
-  ctx.stroke();
+    ctx.fillStyle = "#5d4037";
+    ctx.beginPath(); ctx.ellipse(500, 250, 450, 250, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = "rgba(255,255,255,0.1)"; ctx.lineWidth = 2;
+    for(let i=0; i<6; i++) {
+        ctx.beginPath(); ctx.ellipse(500, 250, 285+(i*30), 108+(i*25), 0, 0, Math.PI * 2); ctx.stroke();
+    }
+    ctx.strokeStyle = "#fff"; ctx.lineWidth = 8;
+    ctx.beginPath(); ctx.moveTo(500, 15); ctx.lineTo(500, 142); ctx.stroke();
 }
 
+// Draw horses
 function drawHorse(h) {
-  const x = 400 + Math.cos(h.angle) * h.rx;
-  const y = 90 + Math.sin(h.angle) * h.ry;
-  ctx.save();
-  ctx.translate(x, y);
-  ctx.rotate(h.angle + Math.PI/2);
-  ctx.fillStyle = h.color;
-  ctx.beginPath();
-  ctx.ellipse(0, 0, 14, 9, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = (h.color === '#ffffff' || h.color === '#ffd700') ? "#000" : "#fff";
-  ctx.font = "bold 11px Arial";
-  ctx.textAlign = "center";
-  ctx.fillText(h.label, 0, 4);
-  ctx.restore();
+    const x = 500 + Math.cos(h.angle) * h.rx;
+    const y = 250 + Math.sin(h.angle) * h.ry;
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(h.angle + Math.PI/2);
+    ctx.fillStyle = h.color;
+    ctx.beginPath(); ctx.ellipse(0, 0, 14, 9, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = (h.color === '#ffffff' || h.color === '#ffd700') ? "#000" : "#fff";
+    ctx.font = "bold 11px Arial"; ctx.textAlign = "center";
+    ctx.fillText(h.label, 0, 4);
+    ctx.restore();
 }
 
-function render() {
-  ctx.clearRect(0, 0, 800, 180);
-  drawTrack();
-  horses.forEach(drawHorse);
+// Render all
+function renderAll() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawTrack();
+    horses.forEach(drawHorse);
 }
 
+// Animate
 function animate(timestamp) {
-  if (!startTime) startTime = timestamp;
-  const elapsed = timestamp - startTime;
-  const progress = Math.min(elapsed / raceDuration,1);
+    if (!startTime) startTime = timestamp;
+    const elapsed = timestamp - startTime;
+    const progress = Math.min(elapsed / raceDuration, 1);
 
-  horses.forEach(h => {
+    horses.forEach(h => {
+        if (progress < 1) {
+            const suspense = Math.sin(progress * 12 + h.phaseShift) * 0.012;
+            const smoothProgress = Math.max(0, (progress * h.speedMult) + suspense);
+            h.angle = (1.5 * Math.PI) + (smoothProgress * Math.PI * 2);
+        } else {
+            h.angle = (1.5 * Math.PI) + (h.speedMult * Math.PI * 2);
+        }
+    });
+
+    renderAll();
     if (progress < 1) {
-      const suspense = Math.sin(progress*12 + h.phaseShift) * 0.012;
-      const smoothProgress = Math.max(0, (progress * h.speedMult) + suspense);
-      h.angle = (1.5 * Math.PI) + (smoothProgress * Math.PI * 2);
+        requestAnimationFrame(animate);
     } else {
-      h.angle = (1.5 * Math.PI) + (h.speedMult * Math.PI * 2);
+        finishRace();
     }
-  });
-
-  render();
-
-  if (progress < 1) {
-    requestAnimationFrame(animate);
-  } else {
-    finishRace();
-  }
 }
 
+// Finish race
 function finishRace() {
-  const betOn = horseSelect.value;
-  const winner = horses.reduce((a, b) => a.angle > b.angle ? a : b);
-  const isWin = winner.id == betOn;
-  const betAmt = currentBet;
+    const betOn = horseSelect.value;
+    const winner = horses.reduce((a, b) => a.angle > b.angle ? a : b);
+    const isWin = winner.id == betOn;
+    const betAmount = currentBetAmount;
 
-  if (isWin) {
-    const payout = betAmt * 5;
-    balance += payout;
-    resultTitle.innerText = "🏆 YOU WON!";
-    resultTitle.className = "win-text";
-    resultMessage.innerText = `Horse #${winner.label} took the gold! You win $${payout}!`;
-    if (balance > highscore) {
-      highscore = balance;
-      localStorage.setItem('highscore', highscore);
-      highscoreBox.innerText = 'Highscore: ' + highscore;
+    if (isWin) {
+        const payout = betAmount * 5;
+        balance += payout;
+        resultTitle.innerText = "🏆 YOU WON!";
+        resultTitle.className = "win-text";
+        resultMessage.innerText = `Horse #${winner.label} came in first. Dave pays out $${payout}!`;
+        if (balance > highscore) {
+            highscore = balance;
+            localStorage.setItem('horseHighscore', highscore);
+            highscoreDisplay.innerText = 'Highscore: ' + highscore;
+        }
+    } else {
+        resultTitle.innerText = "💸 YOU LOST";
+        resultTitle.className = "lose-text";
+        resultMessage.innerText = `Horse #${winner.label} won the race. Better luck next time!`;
     }
-  } else {
-    resultTitle.innerText = "💸 YOU LOST";
-    resultTitle.className = "lose-text";
-    resultMessage.innerText = `Horse #${winner.label} won the race. Better luck next time!`;
-  }
-  document.querySelector('#balanceSpan').innerText = balance;
+    balanceEl.innerText = balance;
 
-  setTimeout(() => {
-    document.getElementById('resultOverlay').style.display = 'flex';
-    overlayVisible = true;
-    canBet = true;
+    setTimeout(() => {
+        resultOverlay.style.display = "block";
+        overlayVisible = true;
+        // Re-enable betting and reset 'canBet' after race ends
+        canBet = true;
+        startBtn.disabled = false;
+        horseSelect.disabled = false;
+    }, 500);
+}
+
+// Close overlay
+function closeOverlay() {
+    resultOverlay.style.display = "none";
+    overlayVisible = false;
+    racing = false;
     startBtn.disabled = false;
     horseSelect.disabled = false;
-  }, 500);
+    startTime = null;
+    initHorses();
+    renderAll();
+    // Re-enable betting for next race
+    canBet = true;
 }
 
-function closeOverlay() {
-  document.getElementById('resultOverlay').style.display = 'none';
-  overlayVisible = false;
-  racing = false;
-  startBtn.disabled = false;
-  horseSelect.disabled = false;
-  startTime = null;
-  initHorses();
-  render();
-  canBet = true;
-}
-
+// Handle Bet
 function handleBet() {
-  if (racing || !canBet || overlayVisible) return;
-  const betAmt = parseInt(betSlider.value);
-  if (isNaN(betAmt) || betAmt < 1) { alert("Invalid bet"); return; }
-  if (balance < betAmt) { alert("Out of cash!"); return; }
-  balance -= betAmt;
-  currentBet = betAmt;
-  document.querySelector('#balanceSpan').innerText = balance;
-  canBet = false;
-  startBtn.disabled = true;
-  horseSelect.disabled = true;
-  startTime = null;
-  requestAnimationFrame(animate);
+    if (racing || !canBet || overlayVisible) return;
+    const betAmount = parseInt(betAmountInput.value, 10);
+    if (isNaN(betAmount) || betAmount < 1) {
+        showCustomPopup("Invalid Bet", "Please enter a bet amount of at least $1.");
+        return;
+    }
+    if (balance < betAmount) {
+        resultTitle.innerText = "OUT OF CASH";
+        resultTitle.className = "lose-text";
+        resultMessage.innerText = "Dave doesn't give loans. Come back when you're loaded!";
+        resultOverlay.style.display = "block";
+        overlayVisible = true;
+        return;
+    }
+
+    // Disable reset button during race
+    resetBtn.disabled = true;
+
+    canBet = false; // prevent multiple bets
+    startBtn.blur();
+    horseSelect.disabled = true;
+    startBtn.disabled = true;
+    balance -= betAmount;
+    balanceEl.innerText = balance;
+    currentBetAmount = betAmount;
+    racing = true;
+    requestAnimationFrame(animate);
 }
 
-// Bind buttons
-document.getElementById('placeBetBtn').onclick = handleBet;
-document.getElementById('continueBtn').onclick = () => { closeOverlay(); };
-document.getElementById('resetBtn').onclick = () => {
-  balance = 2000;
-  localStorage.setItem('highscore', 0);
-  highscore = 0;
-  highscoreBox.innerText = 'Highscore: ' + highscore;
-  document.querySelector('#balanceSpan').innerText = balance;
-  initHorses();
-  render();
-  document.getElementById('resultOverlay').style.display='none';
-  overlayVisible = false;
-  racing = false;
-  canBet = true;
-};
+// Show custom popup for invalid input
+function showCustomPopup(title, message) {
+    let popup = document.getElementById('customPopup');
+    if (!popup) {
+        popup = document.createElement('div');
+        popup.id = 'customPopup';
+        popup.style.position = 'fixed';
+        popup.style.top = '50%';
+        popup.style.left = '50%';
+        popup.style.transform = 'translate(-50%, -50%)';
+        popup.style.background = 'rgba(0,0,0,0.95)';
+        popup.style.border = '4px solid #ffd700';
+        popup.style.borderRadius = '20px';
+        popup.style.padding = '30px';
+        popup.style.zIndex = '9999';
+        popup.style.maxWidth = '400px';
+        popup.style.width = '80%';
+        popup.style.boxShadow = '0 0 50px rgba(0,0,0,1)';
+        document.body.appendChild(popup);
+    }
+    popup.innerHTML = `
+        <div style="font-size:24px; margin-bottom:15px; text-align:center;">${title}</div>
+        <div style="font-size:18px; margin-bottom:20px; color:#ccc; text-align:center;">${message}</div>
+        <button style="background:linear-gradient(#ffd700,#b8860b); padding:10px 20px; border:none; border-radius:8px; font-weight:bold; cursor:pointer;" id="popupCloseBtn">OK</button>
+    `;
+    popup.style.display = 'block';
 
-// Spacebar
-window.addEventListener('keydown', (e) => {
-  if (e.code === 'Space') {
-    e.preventDefault();
-    if (overlayVisible) { closeOverlay(); } else { handleBet(); }
-  }
+    document.getElementById('popupCloseBtn').onclick = () => {
+        popup.style.display = 'none';
+    };
+}
+
+// Reset button disables during game
+document.getElementById('resetBtn').addEventListener('click', () => {
+    balance = 2000;
+    highscore = 0;
+    localStorage.setItem('horseHighscore', highscore);
+    highscoreDisplay.innerText = 'Highscore: ' + highscore;
+    balanceEl.innerText = balance;
+    initHorses();
+    renderAll();
+    resultOverlay.style.display = "none";
+    overlayVisible = false;
+    racing = false;
+    canBet = true; // Reset betting permission
+    startTime = null;
+    resetBtn.disabled = false;
 });
 
-// Slider
-const slider = document.getElementById('betSlider');
-const amountDisplay = document.getElementById('betAmountDisplay');
-slider.oninput = () => {
-  amountDisplay.innerText = '$' + slider.value;
-};
-slider.value = 10;
-amountDisplay.innerText = '$10';
+// When race starts, disable reset button
+// Already handled in handleBet()
 
-// Render initial
-render();
+// When race ends or overlay closed, re-enable reset button
+function finishRace() {
+    // ... existing code ...
+    // Show overlay
+    setTimeout(() => {
+        resultOverlay.style.display = "block";
+        overlayVisible = true;
+        resetBtn.disabled = false; // re-enable on race end
+        // Re-enable betting for next race
+        canBet = true;
+    }, 500);
+}
+function closeOverlay() {
+    resultOverlay.style.display = "none";
+    overlayVisible = false;
+    racing = false;
+    startBtn.disabled = false;
+    horseSelect.disabled = false;
+    startTime = null;
+    initHorses();
+    renderAll();
+    // Re-enable betting
+    canBet = true;
+}
+
+// Initialize game
+function initHorses() {
+    horses = horseData.map((h, i) => ({
+        ...h,
+        angle: 1.5 * Math.PI,
+        rx: 300 + (i * 30), 
+        ry: 120 + (i * 25),
+        phaseShift: Math.random() * 10,
+        speedMult: 0.985 + (Math.random() * 0.035) 
+    }));
+}
+initHorses();
+renderAll();
+
+// Attach event listener to start button
+document.getElementById('startBtn').addEventListener('click', handleBet);
+// Attach event to overlay close button
+document.getElementById('closeOverlayBtn').addEventListener('click', () => {
+    closeOverlay();
+});
+// Attach spacebar handler
+window.addEventListener('keydown', (e) => {
+    if (e.code === "Space") {
+        e.preventDefault();
+        if (overlayVisible) {
+            closeOverlay();
+        } else {
+            handleBet();
+        }
+    }
+});
+
+// Draw initial scene
+renderAll();
 </script>
 </body>
 </html>
