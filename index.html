@@ -8,7 +8,7 @@
 body { 
     background: radial-gradient(circle, #1a3c1a 0%, #0a1a0a 100%); 
     color: #fff; font-family: 'Segoe UI', sans-serif; 
-    text-align: center; margin: 0; padding: 10px; 
+    margin: 0; padding: 10px; 
     overflow-x: hidden;
 }
 .back-hub {
@@ -56,37 +56,43 @@ canvas {
 #resultMessage { font-size: 18px; margin-bottom: 20px; }
 .win-text { color: #ffd700; text-shadow: 0 0 10px #ffd700; }
 .lose-text { color: #ff4444; }
-/* UI Panel for bet controls and buttons */
-.ui-panel { 
-    background: rgba(0,0,0,0.9); border: 2px solid #ffd700; border-radius: 15px; 
-    padding: 15px; margin: 20px auto; max-width: 600px; 
-    display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 15px;
-}
-.balance-box { font-size: 20px; color: #ffd700; font-weight: bold; min-width: 100px; }
-select { 
-    padding: 12px; border-radius: 8px; font-weight: bold; outline: none; 
-    cursor: pointer; background: #fff; flex-grow: 1; max-width: 200px;
-}
-select:disabled { background: #666; color: #ccc; cursor: not-allowed; }
-button { 
-    background: linear-gradient(#ffd700, #b8860b); color: #000; font-weight: bold; 
-    padding: 15px 25px; border-radius: 8px; border: none; cursor: pointer; 
-    box-shadow: 0 4px 0 #8b6d00; outline: none; font-size: 16px;
-}
-button:active { transform: translateY(2px); box-shadow: 0 2px 0 #8b6d00; }
-button:disabled { background: #555; color: #888; box-shadow: none; cursor: not-allowed; }
-/* Style for Reset Button to be closer to Place Bet Button */
-#resetBtn {
-    margin-top: 10px;
+/* UI Panel for bet controls and buttons at bottom of screen */
+#bottomControls {
+    position: fixed;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.7);
+    border-radius: 10px;
     padding: 10px 20px;
-    background: #555; color: #fff; border-radius: 8px; border: none; cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    z-index: 999;
+}
+#bottomControls button {
+    padding: 10px 15px;
     font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
 }
-#resetBtn:hover {
-    background: #ffd700; color: #000;
+#bottomControls button:hover {
+    background: #ffd700;
+    color: #000;
 }
-.hint { margin-top: 10px; color: #aaa; font-size: 12px; }
-/* Highscore display styling */
+#betInput {
+    width: 80px;
+    padding: 8px;
+    font-size: 14px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+}
+#tipText {
+    margin-left: 10px;
+    font-size: 14px;
+    color: #ccc;
+}
 #highscoreDisplay {
     margin-top: 20px;
     font-size: 24px; /* Bigger font for prominence */
@@ -103,10 +109,18 @@ button:disabled { background: #555; color: #888; box-shadow: none; cursor: not-a
     box-shadow: 0 0 10px #ffd700;
 }
 @media (max-width: 480px) {
-    .ui-panel { flex-direction: column; }
-    select { max-width: 100%; width: 100%; }
-    button { width: 100%; }
-    #resetBtn { width: 100%; }
+    #bottomControls {
+        flex-direction: column;
+        width: 100%;
+        bottom: 10px;
+        left: 0;
+        transform: none;
+        border-top: 1px solid #ffd700;
+        border-radius: 0 0 10px 10px;
+    }
+    #bottomControls button {
+        width: 100%;
+    }
 }
 </style>
 </head>
@@ -119,27 +133,6 @@ button:disabled { background: #555; color: #888; box-shadow: none; cursor: not-a
 <!-- Highscore display -->
 <div id="highscoreDisplay">Highscore: 0</div>
 
-<!-- Buttons: Reset and Place Bet side by side for cleaner layout -->
-<div style="margin-top:10px; display:flex; justify-content:center; gap:10px;">
-    <button id="resetBtn">Reset Game</button>
-    <button id="startBtn">PLACE BET</button>
-</div>
-
-<!-- Bet controls area -->
-<div class="ui-panel" style="margin-top:10px;">
-    <label for="betAmount" style="margin-right:8px;">Bet Amount ($):</label>
-    <input type="number" id="betAmount" min="1" max="1000" value="10" style="width:80px; padding:8px; font-size:14px;">
-    <div class="balance-box">💰 <span id="balance">2000</span></div>
-    <select id="horseSelect">
-        <option value="0">#1 Red Rocket</option>
-        <option value="1">#2 Blue Bolt</option>
-        <option value="2">#3 Gold Gallop</option>
-        <option value="3">#4 Silver Streak</option>
-        <option value="4">#5 Purple Power</option>
-    </select>
-</div>
-<div class="hint">Tip: Press <b>SPACEBAR</b> to Bet/Confirm</div>
-
 <!-- Canvas and overlay -->
 <div class="game-container">
     <canvas id="raceTrack" width="1000" height="500"></canvas>
@@ -151,25 +144,30 @@ button:disabled { background: #555; color: #888; box-shadow: none; cursor: not-a
     </div>
 </div>
 
+<!-- Bottom controls: Bet, Reset, Tip -->
+<div id="bottomControls">
+    <input type="number" id="betInput" min="1" max="1000" value="10" />
+    <span id="tipText">Tip: Press SPACEBAR to Bet/Confirm</span>
+    <button id="placeBetBtn">PLACE BET</button>
+    <button id="resetBtn">Reset Game</button>
+</div>
+
 <script>
 // Variables
 const canvas = document.getElementById('raceTrack');
 const ctx = canvas.getContext('2d');
 
-const startBtn = document.getElementById('startBtn');
+const placeBetBtn = document.getElementById('placeBetBtn');
 const resetBtn = document.getElementById('resetBtn');
-const horseSelect = document.getElementById('horseSelect');
-const balanceEl = document.getElementById('balance');
-const betAmountInput = document.getElementById('betAmount');
+const betInput = document.getElementById('betInput');
+const highscoreDisplay = document.getElementById('highscoreDisplay');
 
 const resultOverlay = document.getElementById('resultOverlay');
 const resultTitle = document.getElementById('resultTitle');
 const resultMessage = document.getElementById('resultMessage');
 const closeOverlayBtn = document.getElementById('closeOverlayBtn');
 
-const highscoreDisplay = document.getElementById('highscoreDisplay');
-
-let balance = 2000; // Starting amount
+let balance = 2000;
 let highscore = localStorage.getItem('horseHighscore') || 0;
 highscoreDisplay.innerText = 'Highscore: ' + highscore;
 
@@ -190,7 +188,6 @@ const horseData = [
 let horses = [];
 let currentBetAmount = 10;
 
-// Initialize horses
 function initHorses() {
     horses = horseData.map((h, i) => ({
         ...h,
@@ -202,7 +199,6 @@ function initHorses() {
     }));
 }
 
-// Draw track
 function drawTrack() {
     ctx.fillStyle = "#5d4037";
     ctx.beginPath(); ctx.ellipse(500, 250, 450, 250, 0, 0, Math.PI * 2); ctx.fill();
@@ -214,7 +210,6 @@ function drawTrack() {
     ctx.beginPath(); ctx.moveTo(500, 15); ctx.lineTo(500, 142); ctx.stroke();
 }
 
-// Draw horses
 function drawHorse(h) {
     const x = 500 + Math.cos(h.angle) * h.rx;
     const y = 250 + Math.sin(h.angle) * h.ry;
@@ -229,14 +224,12 @@ function drawHorse(h) {
     ctx.restore();
 }
 
-// Render all
 function renderAll() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     drawTrack();
     horses.forEach(drawHorse);
 }
 
-// Animate
 function animate(timestamp) {
     if (!startTime) startTime = timestamp;
     const elapsed = timestamp - startTime;
@@ -258,7 +251,6 @@ function animate(timestamp) {
     }
 }
 
-// Finish race
 function finishRace() {
     const betOn = horseSelect.value;
     const winner = horses.reduce((a, b) => a.angle > b.angle ? a : b);
@@ -285,11 +277,11 @@ function finishRace() {
     setTimeout(() => {
         resultOverlay.style.display = "block";
         overlayVisible = true;
-        resetBtn.disabled = false; // re-enable reset after race
+        // Re-enable reset button after race
+        resetBtn.disabled = false;
     }, 500);
 }
 
-// Close overlay
 function closeOverlay() {
     resultOverlay.style.display = "none";
     overlayVisible = false;
@@ -299,13 +291,13 @@ function closeOverlay() {
     startTime = null;
     initHorses();
     renderAll();
-    resetBtn.disabled = false; // re-enable after overlay
+    resetBtn.disabled = false;
 }
 
 // Handle Bet
 function handleBet() {
     if (racing || !canBet || overlayVisible) return;
-    const betAmount = parseInt(betAmountInput.value, 10);
+    const betAmount = parseInt(betInput.value, 10);
     if (isNaN(betAmount) || betAmount < 1) {
         showCustomPopup("Invalid Bet", "Please enter a bet amount of at least $1.");
         return;
@@ -318,10 +310,8 @@ function handleBet() {
         overlayVisible = true;
         return;
     }
-
     // Disable reset during race
     resetBtn.disabled = true;
-
     canBet = false;
     startBtn.blur();
     horseSelect.disabled = true;
@@ -359,14 +349,12 @@ function showCustomPopup(title, message) {
         <button style="background:linear-gradient(#ffd700,#b8860b); padding:10px 20px; border:none; border-radius:8px; font-weight:bold; cursor:pointer;" id="popupCloseBtn">OK</button>
     `;
     popup.style.display = 'block';
-
     document.getElementById('popupCloseBtn').onclick = () => {
         popup.style.display = 'none';
     };
 }
 
-// Move the reset button to be next to the Place Bet button
-// (This is accomplished in the HTML above by placing both buttons in a flex container)
+// Move the reset button to bottom controls (already done)
 
 // Attach event listeners
 document.getElementById('resetBtn').addEventListener('click', () => {
@@ -387,7 +375,7 @@ document.getElementById('resetBtn').addEventListener('click', () => {
 document.getElementById('closeOverlayBtn').addEventListener('click', () => {
     closeOverlay();
 });
-document.getElementById('startBtn').addEventListener('click', handleBet);
+document.getElementById('placeBetBtn').addEventListener('click', handleBet);
 
 // Spacebar handler
 window.addEventListener('keydown', (e) => {
