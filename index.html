@@ -2,490 +2,565 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>DAVE POKER</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dave Poker – Texas Hold'em</title>
+<script src="https://cdn.tailwindcss.com"></script>
 
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+
+:root{
+--felt:#35654d;
+--bg:#1a202c;
+--red:#cc0000;
+--gold:#f6e05e;
+}
 
 body{
-    margin:0;
-    font-family:Arial;
-    background:radial-gradient(circle,#1b2a44,#0d1626);
-    color:white;
+font-family:'Inter',sans-serif;
+background:var(--bg);
+color:white;
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
 }
 
-.game{
-    width:1100px;
-    margin:30px auto;
-    background:#2a3548;
-    border-radius:12px;
-    padding:15px;
-    box-shadow:0 0 30px rgba(0,0,0,.6);
+#game{
+width:100%;
+max-width:1000px;
+background:#2d3748;
+padding:12px;
+border-radius:12px;
+box-shadow:0 0 40px black;
 }
 
-.header{
-    text-align:center;
+/* TABLE */
+
+.table{
+background:radial-gradient(circle at center,#3f7f5d,#2c5e46);
+border-radius:16px;
+padding:20px;
+min-height:320px;
+border:3px solid #1f3f30;
 }
 
-.header h1{
-    margin:0;
-    color:gold;
-}
-
-.stats{
-    display:flex;
-    justify-content:space-between;
-    margin-top:5px;
-}
-
-.tableArea{
-    display:flex;
-    justify-content:space-between;
-    padding:20px;
-    min-height:320px;
-}
-
-.players{
-    display:flex;
-    gap:50px;
-}
-
-.player{
-    text-align:center;
-    position:relative;
-}
-
-.cards{
-    display:flex;
-    gap:10px;
-    margin-top:10px;
-}
+/* CARD */
 
 .card{
-    width:70px;
-    height:100px;
-    background:white;
-    color:black;
-    border-radius:8px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size:24px;
-    font-weight:bold;
+width:70px;
+height:100px;
+background:white;
+border-radius:8px;
+display:inline-flex;
+flex-direction:column;
+justify-content:space-between;
+padding:5px;
+margin:4px;
+font-weight:900;
+font-size:18px;
+color:black;
+box-shadow:0 3px 8px rgba(0,0,0,.5);
+animation:deal .25s ease;
 }
 
-.red{
-    color:red;
+.red{color:var(--red)}
+
+@keyframes deal{
+from{transform:translateY(-200px);opacity:0}
+to{transform:translateY(0);opacity:1}
 }
 
-.potArea{
-    text-align:center;
-    width:200px;
+/* BUTTON */
+
+.btn{
+padding:12px;
+border-radius:10px;
+font-weight:900;
+transition:.15s;
+box-shadow:0 4px 10px black;
 }
 
-.potCircle{
-    width:120px;
-    height:120px;
-    background:gold;
-    color:black;
-    border-radius:50%;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size:24px;
-    font-weight:bold;
-    margin:auto;
+.btn:active{
+transform:scale(.95);
 }
-
-.controls{
-    display:flex;
-    gap:15px;
-    justify-content:center;
-    margin-top:10px;
-}
-
-button{
-    padding:15px 30px;
-    font-size:18px;
-    border:none;
-    border-radius:8px;
-    cursor:pointer;
-}
-
-.bet{background:#1f9c45;color:white;}
-.check{background:#2d63d6;color:white;}
-.fold{background:#d62d2d;color:white;}
-.next{background:#e0b000;color:black;}
 
 .glow{
-    animation:pulse 1.2s infinite;
+box-shadow:0 0 15px var(--gold),0 0 30px var(--gold);
+border:2px solid var(--gold);
 }
 
-@keyframes pulse{
-    0%{box-shadow:0 0 5px gold;}
-    50%{box-shadow:0 0 25px gold;}
-    100%{box-shadow:0 0 5px gold;}
+/* POT */
+
+.pot{
+display:flex;
+flex-direction:column;
+align-items:center;
+margin:10px;
 }
 
-.hintBar{
-    margin-top:10px;
-    display:flex;
-    justify-content:space-between;
+.chipsStack{
+width:60px;
+height:60px;
+background:
+radial-gradient(circle,#ffd700,#c9a000);
+border-radius:50%;
+box-shadow:0 0 15px gold;
+display:flex;
+align-items:center;
+justify-content:center;
+font-weight:bold;
+color:black;
 }
 
-.toggle{
-    cursor:pointer;
+/* TOGGLE */
+
+.switch{
+width:50px;
+height:25px;
+background:#444;
+border-radius:20px;
+position:relative;
+cursor:pointer;
 }
 
-.floating{
-    position:absolute;
-    left:50%;
-    transform:translateX(-50%);
-    top:-20px;
-    color:gold;
-    animation:floatUp 2s forwards;
+.knob{
+width:21px;
+height:21px;
+background:white;
+border-radius:50%;
+position:absolute;
+top:2px;
+left:2px;
+transition:.2s;
 }
 
-@keyframes floatUp{
-    0%{opacity:1;top:20px;}
-    100%{opacity:0;top:-40px;}
+.switch.on{
+background:#22c55e;
 }
 
-.chip{
-    position:absolute;
-    width:20px;
-    height:20px;
-    background:gold;
-    border-radius:50%;
-}
-
-.helpBtn{
-    position:absolute;
-    right:20px;
-    bottom:20px;
-    background:#444;
-}
-
-.helpMenu{
-    position:fixed;
-    top:50%;
-    left:50%;
-    transform:translate(-50%,-50%);
-    background:#1e2633;
-    padding:20px;
-    border-radius:10px;
-    width:500px;
-    display:none;
+.switch.on .knob{
+left:27px;
 }
 
 </style>
 </head>
 <body>
 
-<div class="game">
+<div id="game">
 
-<div class="header">
-<h1>DAVE POKER</h1>
-<div class="stats">
-<div>Chips: $<span id="chips">1900</span></div>
-<div>High: $2150</div>
-</div>
-</div>
+<h1 class="text-3xl font-black text-yellow-400 text-center">
+DAVE POKER
+</h1>
 
-<div class="tableArea">
+<div class="flex justify-between bg-gray-800 p-2 rounded font-bold">
 
-<div class="players">
-
-<div class="player" id="you">
-YOU
-<div class="cards" id="youCards"></div>
-</div>
-
-<div class="player" id="dave">
-DAVE
-<div class="cards" id="daveCards"></div>
-</div>
-
-<div class="player" id="bot">
-BOT
-<div class="cards" id="botCards"></div>
-</div>
+<div>Chips: <span id="chips">$2000</span></div>
+<div id="turn">Your turn</div>
+<div>High: <span id="high">$2000</span></div>
 
 </div>
 
-<div class="potArea">
+<div class="table mt-2 text-center">
 
-<div class="potCircle" id="pot">
-$300
-</div>
-
+<div class="pot">
+<div class="chipsStack" id="potVisual">$0</div>
 <div>POT</div>
+</div>
+
+<div id="community"></div>
+
+<div id="players"></div>
 
 </div>
 
+<div class="grid grid-cols-4 gap-2 mt-3">
+
+<button id="betBtn"
+onclick="playerBet()"
+class="btn bg-green-600 hover:bg-green-700">
+BET 100
+</button>
+
+<button id="checkBtn"
+onclick="playerCheck()"
+class="btn bg-blue-600 hover:bg-blue-700">
+CHECK
+</button>
+
+<button id="foldBtn"
+onclick="playerFold()"
+class="btn bg-red-600 hover:bg-red-700">
+FOLD
+</button>
+
+<button id="nextBtn"
+onclick="nextPhase()"
+class="btn bg-yellow-500 text-black hover:bg-yellow-600">
+NEXT
+</button>
+
 </div>
 
-<div class="controls">
+<div class="flex items-center gap-2 mt-3">
 
-<button class="bet" id="betBtn">BET 100</button>
+<div>Hints</div>
 
-<button class="check" id="checkBtn">CHECK</button>
-
-<button class="fold" id="foldBtn">FOLD</button>
-
-<button class="next" id="nextBtn">NEXT</button>
-
+<div id="hintSwitch"
+class="switch on"
+onclick="toggleHints()">
+<div class="knob"></div>
 </div>
 
-<div class="hintBar">
-
-<div>
-Hints
-<input type="checkbox" id="hintToggle" checked>
-</div>
-
-<div id="hintText">
-Press NEXT to reveal cards
-</div>
+<div id="tip" class="ml-3 text-yellow-300 font-bold"></div>
 
 </div>
-
-</div>
-
-<button class="helpBtn" onclick="toggleHelp()">HELP</button>
-
-<div class="helpMenu" id="helpMenu">
-
-<h2>HOW TO PLAY</h2>
-
-<p>
-This is a simplified poker game.
-</p>
-
-<p>
-BET adds chips to the pot.
-CHECK passes turn.
-FOLD exits round.
-NEXT progresses the game.
-</p>
-
-<p>
-Hints highlight what to press next.
-</p>
-
-<button onclick="toggleHelp()">Close</button>
 
 </div>
 
 <script>
 
-let suits=["♠","♥","♦","♣"]
-let values=["A","K","Q","J","10","9","8","7"]
+/* ---------- DATA ---------- */
 
-let pot=300
-let chips=1900
+const suits=["♠","♥","♦","♣"]
+const ranks=["2","3","4","5","6","7","8","9","10","J","Q","K","A"]
 
+let deck=[]
+let players=[]
+let community=[]
+let pot=0
+let chips=2000
+let high=2000
+
+let phase=0
+let turnIndex=0
 let hints=true
-let lastHint="Press NEXT to reveal cards"
 
-function randomCard(){
+/* ---------- ELEMENTS ---------- */
 
-let value=values[Math.floor(Math.random()*values.length)]
-let suit=suits[Math.floor(Math.random()*suits.length)]
+const chipsEl=document.getElementById("chips")
+const potVisual=document.getElementById("potVisual")
+const highEl=document.getElementById("high")
+const turnEl=document.getElementById("turn")
+const tipEl=document.getElementById("tip")
 
-return value+suit
+const betBtn=document.getElementById("betBtn")
+const checkBtn=document.getElementById("checkBtn")
+const foldBtn=document.getElementById("foldBtn")
+const nextBtn=document.getElementById("nextBtn")
+
+/* ---------- UTILS ---------- */
+
+function sleep(ms){
+return new Promise(r=>setTimeout(r,ms))
+}
+
+function tip(text){
+tipEl.innerText=hints?text:""
+}
+
+function toggleHints(){
+
+hints=!hints
+
+document.getElementById("hintSwitch").classList.toggle("on")
+
+tip("")
 
 }
 
-function drawCards(){
+/* ---------- DECK ---------- */
 
-draw("youCards")
-draw("daveCards")
-draw("botCards")
+function makeDeck(){
 
-}
+deck=[]
 
-function draw(id){
+for(let s of suits)
+for(let r of ranks)
+deck.push({s,r})
 
-let div=document.getElementById(id)
-div.innerHTML=""
-
-for(let i=0;i<2;i++){
-
-let c=randomCard()
-
-let el=document.createElement("div")
-
-el.className="card"
-
-if(c.includes("♥")||c.includes("♦"))
-el.classList.add("red")
-
-el.innerText=c
-
-div.appendChild(el)
+deck.sort(()=>Math.random()-.5)
 
 }
 
+function draw(){
+return deck.pop()
 }
 
-drawCards()
+/* ---------- CARD ---------- */
 
-function updatePot(){
+function cardHTML(c){
 
-document.getElementById("pot").innerText="$"+pot
+let red=(c.s=="♥"||c.s=="♦")?"red":""
 
-}
-
-function updateChips(){
-
-document.getElementById("chips").innerText=chips
-
-}
-
-function floating(player,text){
-
-let p=document.getElementById(player)
-
-let f=document.createElement("div")
-
-f.className="floating"
-
-f.innerText=text
-
-p.appendChild(f)
-
-setTimeout(()=>f.remove(),2000)
+return `
+<div class="card ${red}">
+<div>${c.r}</div>
+<div>${c.s}</div>
+<div style="transform:rotate(180deg)">
+${c.r}
+</div>
+</div>
+`
 
 }
 
-function chipAnim(){
+/* ---------- RENDER ---------- */
 
-let chip=document.createElement("div")
+function render(){
 
-chip.className="chip"
+chipsEl.innerText="$"+chips
+potVisual.innerText="$"+pot
+highEl.innerText="$"+high
 
-chip.style.left="200px"
-chip.style.top="300px"
+document.getElementById("community").innerHTML=
+community.map(cardHTML).join("")
 
-document.body.appendChild(chip)
+let html=""
 
-chip.animate([
-{transform:"translate(0,0)"},
-{transform:"translate(600px,-200px)"}
-],1000)
+players.forEach(p=>{
 
-setTimeout(()=>chip.remove(),1000)
+html+=`
+<div class="mt-2">
+${p.name} ${p.fold?"(FOLDED)":""}<br>
+${p.hand.map(cardHTML).join("")}
+</div>
+`
 
-}
+})
 
-function botTurn(player){
-
-setHint(player+" thinking...")
-
-setTimeout(()=>{
-
-let action=["CHECK","BET","FOLD"][Math.floor(Math.random()*3)]
-
-floating(player.toLowerCase(),action)
-
-if(action=="BET"){
-
-pot+=100
-chipAnim()
-updatePot()
+document.getElementById("players").innerHTML=html
 
 }
 
-setHint(player+" "+action)
+/* ---------- GAME ---------- */
 
-highlight("nextBtn")
+function startRound(){
 
-},1500)
+makeDeck()
 
-}
+players=[
+{name:"YOU",hand:[draw(),draw()],fold:false},
+{name:"DAVE",hand:[draw(),draw()],fold:false},
+{name:"BOT",hand:[draw(),draw()],fold:false}
+]
 
-function setHint(text){
+community=[]
+pot=0
+phase=0
+turnIndex=0
 
-lastHint=text
+turnEl.innerText="Your turn"
 
-if(hints)
-document.getElementById("hintText").innerText=text
+highlight("betBtn","checkBtn","foldBtn")
 
-}
+tip("Bet, check, or fold.")
 
-function highlight(id){
-
-document.querySelectorAll("button").forEach(b=>b.classList.remove("glow"))
-
-if(hints)
-document.getElementById(id).classList.add("glow")
-
-}
-
-document.getElementById("hintToggle").onchange=function(){
-
-hints=this.checked
-
-if(hints)
-document.getElementById("hintText").innerText=lastHint
-else
-document.getElementById("hintText").innerText="Hints disabled"
+render()
 
 }
 
-document.getElementById("betBtn").onclick=function(){
+/* ---------- HIGHLIGHT ---------- */
+
+function highlight(...ids){
+
+[betBtn,checkBtn,foldBtn,nextBtn]
+.forEach(b=>b.classList.remove("glow"))
+
+if(!hints) return
+
+ids.forEach(id=>document.getElementById(id)
+.classList.add("glow"))
+
+}
+
+/* ---------- PLAYER ACTIONS ---------- */
+
+function playerBet(){
 
 chips-=100
 pot+=100
 
-updatePot()
-updateChips()
+tip("You bet. Others are thinking...")
+highlight()
 
-chipAnim()
+nextTurn()
 
-floating("you","BET")
-
-setHint("Dave's turn")
-
-botTurn("Dave")
+render()
 
 }
 
-document.getElementById("checkBtn").onclick=function(){
+function playerCheck(){
 
-floating("you","CHECK")
+tip("You checked.")
+highlight()
 
-setHint("Dave's turn")
-
-botTurn("Dave")
-
-}
-
-document.getElementById("foldBtn").onclick=function(){
-
-floating("you","FOLD")
-
-setHint("Round ended")
+nextTurn()
 
 }
 
-document.getElementById("nextBtn").onclick=function(){
+function playerFold(){
 
-setHint("Bot turn")
+players[0].fold=true
 
-botTurn("Bot")
+tip("You folded.")
+highlight()
+
+nextTurn()
 
 }
 
+/* ---------- TURN SYSTEM ---------- */
+
+async function nextTurn(){
+
+turnIndex++
+
+if(turnIndex>=players.length){
+
+turnIndex=0
 highlight("nextBtn")
+tip("Press NEXT to reveal cards.")
+turnEl.innerText="Reveal phase"
+return
 
-function toggleHelp(){
+}
 
-let m=document.getElementById("helpMenu")
+let p=players[turnIndex]
 
-m.style.display=
-m.style.display=="block"?
-"none":"block"
+if(p.name=="YOU") return
+
+turnEl.innerText=p.name+" thinking..."
+
+await sleep(1500)
+
+let r=Math.random()
+
+if(r<.3){
+
+p.fold=true
+tip(p.name+" folds.")
+
+}else{
+
+pot+=100
+tip(p.name+" bets 100.")
+
+}
+
+render()
+
+await sleep(1000)
+
+nextTurn()
+
+}
+
+/* ---------- PHASE ---------- */
+
+function nextPhase(){
+
+phase++
+
+highlight()
+
+if(phase==1){
+
+community.push(draw(),draw(),draw())
+tip("Flop revealed.")
+
+}
+
+else if(phase==2){
+
+community.push(draw())
+tip("Turn revealed.")
+
+}
+
+else if(phase==3){
+
+community.push(draw())
+tip("River revealed.")
+
+}
+
+else{
+
+showdown()
+return
+
+}
+
+turnIndex=0
+turnEl.innerText="Your turn"
+highlight("betBtn","checkBtn","foldBtn")
+
+render()
+
+}
+
+/* ---------- WIN ---------- */
+
+function value(c){
+return ranks.indexOf(c.r)
+}
+
+function showdown(){
+
+let best=-1
+let winner=null
+
+players.forEach(p=>{
+
+if(p.fold) return
+
+let v=Math.max(...[...p.hand,...community]
+.map(value))
+
+if(v>best){
+
+best=v
+winner=p
+
+}
+
+})
+
+if(winner.name=="YOU"){
+
+chips+=pot
+tip("You win "+pot+"!")
+
+}else{
+
+tip(winner.name+" wins.")
+
+}
+
+pot=0
+
+if(chips>high){
+
+high=chips
+localStorage.setItem("davePokerHigh",high)
+
+}
+
+setTimeout(startRound,2500)
+
+render()
+
+}
+
+/* ---------- INIT ---------- */
+
+window.onload=()=>{
+
+let saved=localStorage.getItem("davePokerHigh")
+if(saved) high=parseInt(saved)
+
+startRound()
 
 }
 
