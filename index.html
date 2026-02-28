@@ -3,23 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dave Poker – Texas Hold'em</title>
+<title>Texas Hold'em Pro</title>
 <script src="https://cdn.tailwindcss.com"></script>
 
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-
-:root{
---felt:#35654d;
---bg:#1a202c;
---red:#cc0000;
---gold:#f6e05e;
-}
 
 body{
-font-family:'Inter',sans-serif;
-background:var(--bg);
+background:#1a202c;
 color:white;
+font-family:Arial;
 display:flex;
 justify-content:center;
 align-items:center;
@@ -27,120 +19,48 @@ height:100vh;
 }
 
 #game{
-width:100%;
-max-width:1000px;
+width:1000px;
 background:#2d3748;
-padding:12px;
+padding:15px;
 border-radius:12px;
 box-shadow:0 0 40px black;
 }
 
-/* TABLE */
-
 .table{
-background:radial-gradient(circle at center,#3f7f5d,#2c5e46);
-border-radius:16px;
+background:radial-gradient(circle,#3f7f5d,#2c5e46);
 padding:20px;
-min-height:320px;
-border:3px solid #1f3f30;
+border-radius:16px;
+min-height:350px;
 }
-
-/* CARD */
 
 .card{
 width:70px;
 height:100px;
 background:white;
+color:black;
 border-radius:8px;
 display:inline-flex;
 flex-direction:column;
 justify-content:space-between;
 padding:5px;
 margin:4px;
-font-weight:900;
-font-size:18px;
-color:black;
-box-shadow:0 3px 8px rgba(0,0,0,.5);
-animation:deal .25s ease;
+font-weight:bold;
 }
 
-.red{color:var(--red)}
+.red{color:#cc0000;}
 
-@keyframes deal{
-from{transform:translateY(-200px);opacity:0}
-to{transform:translateY(0);opacity:1}
+.cardBack{
+background:linear-gradient(135deg,#1e3a8a,#2563eb);
 }
-
-/* BUTTON */
 
 .btn{
-padding:12px;
-border-radius:10px;
-font-weight:900;
-transition:.15s;
-box-shadow:0 4px 10px black;
-}
-
-.btn:active{
-transform:scale(.95);
+padding:10px;
+border-radius:8px;
+font-weight:bold;
 }
 
 .glow{
-box-shadow:0 0 15px var(--gold),0 0 30px var(--gold);
-border:2px solid var(--gold);
-}
-
-/* POT */
-
-.pot{
-display:flex;
-flex-direction:column;
-align-items:center;
-margin:10px;
-}
-
-.chipsStack{
-width:60px;
-height:60px;
-background:
-radial-gradient(circle,#ffd700,#c9a000);
-border-radius:50%;
 box-shadow:0 0 15px gold;
-display:flex;
-align-items:center;
-justify-content:center;
-font-weight:bold;
-color:black;
-}
-
-/* TOGGLE */
-
-.switch{
-width:50px;
-height:25px;
-background:#444;
-border-radius:20px;
-position:relative;
-cursor:pointer;
-}
-
-.knob{
-width:21px;
-height:21px;
-background:white;
-border-radius:50%;
-position:absolute;
-top:2px;
-left:2px;
-transition:.2s;
-}
-
-.switch.on{
-background:#22c55e;
-}
-
-.switch.on .knob{
-left:27px;
 }
 
 </style>
@@ -149,23 +69,22 @@ left:27px;
 
 <div id="game">
 
-<h1 class="text-3xl font-black text-yellow-400 text-center">
-DAVE POKER
+<h1 class="text-3xl text-yellow-400 font-bold text-center">
+TEXAS HOLD'EM PRO
 </h1>
 
-<div class="flex justify-between bg-gray-800 p-2 rounded font-bold">
+<div class="flex justify-between bg-gray-800 p-2 rounded">
 
-<div>Chips: <span id="chips">$2000</span></div>
-<div id="turn">Your turn</div>
-<div>High: <span id="high">$2000</span></div>
+<div>Your Chips: $<span id="yourChips"></span></div>
+<div id="turn"></div>
+<div>High: $<span id="high"></span></div>
 
 </div>
 
 <div class="table mt-2 text-center">
 
-<div class="pot">
-<div class="chipsStack" id="potVisual">$0</div>
-<div>POT</div>
+<div>
+POT: $<span id="pot"></span>
 </div>
 
 <div id="community"></div>
@@ -176,100 +95,66 @@ DAVE POKER
 
 <div class="grid grid-cols-4 gap-2 mt-3">
 
-<button id="betBtn"
-onclick="playerBet()"
-class="btn bg-green-600 hover:bg-green-700">
-BET 100
-</button>
-
-<button id="checkBtn"
-onclick="playerCheck()"
-class="btn bg-blue-600 hover:bg-blue-700">
-CHECK
-</button>
-
-<button id="foldBtn"
-onclick="playerFold()"
-class="btn bg-red-600 hover:bg-red-700">
-FOLD
-</button>
-
-<button id="nextBtn"
-onclick="nextPhase()"
-class="btn bg-yellow-500 text-black hover:bg-yellow-600">
-NEXT
-</button>
+<button id="betBtn" class="btn bg-green-600">BET</button>
+<button id="callBtn" class="btn bg-blue-600">CALL</button>
+<button id="checkBtn" class="btn bg-gray-600">CHECK</button>
+<button id="foldBtn" class="btn bg-red-600">FOLD</button>
 
 </div>
 
-<div class="flex items-center gap-2 mt-3">
-
-<div>Hints</div>
-
-<div id="hintSwitch"
-class="switch on"
-onclick="toggleHints()">
-<div class="knob"></div>
-</div>
-
-<div id="tip" class="ml-3 text-yellow-300 font-bold"></div>
-
-</div>
+<div id="message" class="mt-3 text-yellow-300 font-bold"></div>
 
 </div>
 
 <script>
 
-/* ---------- DATA ---------- */
+/* ---------- CONFIG ---------- */
 
 const suits=["♠","♥","♦","♣"]
 const ranks=["2","3","4","5","6","7","8","9","10","J","Q","K","A"]
+
+const botNames=[
+"Liam","Noah","Mason","Logan","Lucas","Ethan","Aiden",
+"Zane","Kai","Axel","Blaze","Ryder","Cole","Jax",
+"Knox","Chase","Leo","Ivan","Nash","Zeke"
+]
+
+/* ---------- STATE ---------- */
 
 let deck=[]
 let players=[]
 let community=[]
 let pot=0
-let chips=2000
-let high=2000
-
+let turn=0
 let phase=0
-let turnIndex=0
-let hints=true
+let betAmount=100
+let actionLock=false
+let high=2000
 
 /* ---------- ELEMENTS ---------- */
 
-const chipsEl=document.getElementById("chips")
-const potVisual=document.getElementById("potVisual")
-const highEl=document.getElementById("high")
+const yourChipsEl=document.getElementById("yourChips")
+const potEl=document.getElementById("pot")
+const playersEl=document.getElementById("players")
+const commEl=document.getElementById("community")
 const turnEl=document.getElementById("turn")
-const tipEl=document.getElementById("tip")
-
-const betBtn=document.getElementById("betBtn")
-const checkBtn=document.getElementById("checkBtn")
-const foldBtn=document.getElementById("foldBtn")
-const nextBtn=document.getElementById("nextBtn")
+const msgEl=document.getElementById("message")
+const highEl=document.getElementById("high")
 
 /* ---------- UTILS ---------- */
 
-function sleep(ms){
-return new Promise(r=>setTimeout(r,ms))
-}
+function shuffle(array){
 
-function tip(text){
-tipEl.innerText=hints?text:""
-}
+for(let i=array.length-1;i>0;i--){
 
-function toggleHints(){
-
-hints=!hints
-
-document.getElementById("hintSwitch").classList.toggle("on")
-
-tip("")
+let j=Math.floor(Math.random()*(i+1))
+let t=array[i]
+array[i]=array[j]
+array[j]=t
 
 }
 
-/* ---------- DECK ---------- */
+}
 
 function makeDeck(){
 
@@ -279,17 +164,22 @@ for(let s of suits)
 for(let r of ranks)
 deck.push({s,r})
 
-deck.sort(()=>Math.random()-.5)
+shuffle(deck)
 
 }
 
-function draw(){
-return deck.pop()
-}
+function draw(){return deck.pop()}
 
-/* ---------- CARD ---------- */
+function randomName(){
+
+return botNames[Math.floor(Math.random()*botNames.length)]
+
+}
 
 function cardHTML(c){
+
+if(!c)
+return `<div class="card cardBack"></div>`
 
 let red=(c.s=="♥"||c.s=="♦")?"red":""
 
@@ -305,251 +195,310 @@ ${c.r}
 
 }
 
+/* ---------- HAND EVALUATION ---------- */
+
+function rankValue(r){
+
+return ranks.indexOf(r)+2
+
+}
+
+function evaluateHand(cards){
+
+let values=cards.map(c=>rankValue(c.r)).sort((a,b)=>b-a)
+
+let counts={}
+values.forEach(v=>counts[v]=(counts[v]||0)+1)
+
+let pairs=Object.values(counts)
+
+let flush=cards.every(c=>c.s==cards[0].s)
+
+let straight=false
+
+for(let i=0;i<values.length-4;i++){
+
+if(values[i]-values[i+4]==4)
+straight=true
+
+}
+
+if(straight&&flush)return 8
+if(pairs.includes(4))return 7
+if(pairs.includes(3)&&pairs.includes(2))return 6
+if(flush)return 5
+if(straight)return 4
+if(pairs.includes(3))return 3
+if(pairs.filter(x=>x==2).length>=2)return 2
+if(pairs.includes(2))return 1
+
+return 0
+
+}
+
 /* ---------- RENDER ---------- */
 
 function render(){
 
-chipsEl.innerText="$"+chips
-potVisual.innerText="$"+pot
-highEl.innerText="$"+high
+yourChipsEl.innerText=players[0].chips
+potEl.innerText=pot
+highEl.innerText=high
 
-document.getElementById("community").innerHTML=
-community.map(cardHTML).join("")
+commEl.innerHTML=community.map(cardHTML).join("")
 
 let html=""
 
-players.forEach(p=>{
+players.forEach((p,i)=>{
+
+let hand=""
+
+if(i==0 || phase==4 || p.fold)
+hand=p.hand.map(cardHTML).join("")
+else
+hand=cardHTML()+cardHTML()
 
 html+=`
-<div class="mt-2">
-${p.name} ${p.fold?"(FOLDED)":""}<br>
-${p.hand.map(cardHTML).join("")}
+<div>
+${p.name} ($${p.chips}) ${p.fold?"FOLDED":""}
+<br>
+${hand}
 </div>
 `
 
 })
 
-document.getElementById("players").innerHTML=html
+playersEl.innerHTML=html
 
 }
 
-/* ---------- GAME ---------- */
+/* ---------- GAME FLOW ---------- */
 
 function startRound(){
 
 makeDeck()
 
-players=[
-{name:"YOU",hand:[draw(),draw()],fold:false},
-{name:"DAVE",hand:[draw(),draw()],fold:false},
-{name:"BOT",hand:[draw(),draw()],fold:false}
-]
-
 community=[]
 pot=0
 phase=0
-turnIndex=0
+turn=0
 
-turnEl.innerText="Your turn"
+players=[
 
-highlight("betBtn","checkBtn","foldBtn")
+{name:"YOU",chips:players[0]?.chips||2000,hand:[draw(),draw()],fold:false},
 
-tip("Bet, check, or fold.")
+{name:randomName(),chips:2000,hand:[draw(),draw()],fold:false},
 
-render()
+{name:randomName(),chips:2000,hand:[draw(),draw()],fold:false}
 
-}
-
-/* ---------- HIGHLIGHT ---------- */
-
-function highlight(...ids){
-
-[betBtn,checkBtn,foldBtn,nextBtn]
-.forEach(b=>b.classList.remove("glow"))
-
-if(!hints) return
-
-ids.forEach(id=>document.getElementById(id)
-.classList.add("glow"))
-
-}
-
-/* ---------- PLAYER ACTIONS ---------- */
-
-function playerBet(){
-
-chips-=100
-pot+=100
-
-tip("You bet. Others are thinking...")
-highlight()
-
-nextTurn()
+]
 
 render()
 
-}
-
-function playerCheck(){
-
-tip("You checked.")
-highlight()
-
-nextTurn()
+playerTurn()
 
 }
-
-function playerFold(){
-
-players[0].fold=true
-
-tip("You folded.")
-highlight()
-
-nextTurn()
-
-}
-
-/* ---------- TURN SYSTEM ---------- */
-
-async function nextTurn(){
-
-turnIndex++
-
-if(turnIndex>=players.length){
-
-turnIndex=0
-highlight("nextBtn")
-tip("Press NEXT to reveal cards.")
-turnEl.innerText="Reveal phase"
-return
-
-}
-
-let p=players[turnIndex]
-
-if(p.name=="YOU") return
-
-turnEl.innerText=p.name+" thinking..."
-
-await sleep(1500)
-
-let r=Math.random()
-
-if(r<.3){
-
-p.fold=true
-tip(p.name+" folds.")
-
-}else{
-
-pot+=100
-tip(p.name+" bets 100.")
-
-}
-
-render()
-
-await sleep(1000)
-
-nextTurn()
-
-}
-
-/* ---------- PHASE ---------- */
 
 function nextPhase(){
 
 phase++
 
-highlight()
-
-if(phase==1){
-
+if(phase==1)
 community.push(draw(),draw(),draw())
-tip("Flop revealed.")
 
-}
-
-else if(phase==2){
-
+else if(phase==2)
 community.push(draw())
-tip("Turn revealed.")
 
-}
-
-else if(phase==3){
-
+else if(phase==3)
 community.push(draw())
-tip("River revealed.")
-
-}
 
 else{
-
 showdown()
+return
+}
+
+turn=0
+render()
+playerTurn()
+
+}
+
+function playerTurn(){
+
+if(players[turn].fold){
+nextTurn()
+return
+}
+
+if(turn==0){
+
+turnEl.innerText="Your turn"
+actionLock=false
+
+}else{
+
+botAction()
+
+}
+
+}
+
+function nextTurn(){
+
+turn++
+
+if(turn>=players.length){
+
+nextPhase()
 return
 
 }
 
-turnIndex=0
-turnEl.innerText="Your turn"
-highlight("betBtn","checkBtn","foldBtn")
+playerTurn()
 
+}
+
+/* ---------- PLAYER ACTIONS ---------- */
+
+document.getElementById("betBtn").onclick=()=>{
+
+if(actionLock)return
+actionLock=true
+
+let p=players[0]
+
+if(p.chips<betAmount)return
+
+p.chips-=betAmount
+pot+=betAmount
+
+msg("You bet")
+
+nextTurn()
 render()
 
 }
 
-/* ---------- WIN ---------- */
+document.getElementById("callBtn").onclick=()=>{
 
-function value(c){
-return ranks.indexOf(c.r)
+if(actionLock)return
+actionLock=true
+
+let p=players[0]
+
+p.chips-=betAmount
+pot+=betAmount
+
+msg("You call")
+
+nextTurn()
+render()
+
 }
 
+document.getElementById("checkBtn").onclick=()=>{
+
+if(actionLock)return
+actionLock=true
+
+msg("You check")
+
+nextTurn()
+
+}
+
+document.getElementById("foldBtn").onclick=()=>{
+
+if(actionLock)return
+actionLock=true
+
+players[0].fold=true
+
+msg("You fold")
+
+nextTurn()
+render()
+
+}
+
+/* ---------- BOT AI ---------- */
+
+function botAction(){
+
+let p=players[turn]
+
+turnEl.innerText=p.name+" thinking..."
+
+setTimeout(()=>{
+
+if(Math.random()<0.25){
+
+p.fold=true
+msg(p.name+" folds")
+
+}else{
+
+p.chips-=betAmount
+pot+=betAmount
+msg(p.name+" bets")
+
+}
+
+render()
+
+nextTurn()
+
+},1000)
+
+}
+
+/* ---------- SHOWDOWN ---------- */
+
 function showdown(){
+
+phase=4
 
 let best=-1
 let winner=null
 
 players.forEach(p=>{
 
-if(p.fold) return
+if(p.fold)return
 
-let v=Math.max(...[...p.hand,...community]
-.map(value))
+let score=evaluateHand([...p.hand,...community])
 
-if(v>best){
+if(score>best){
 
-best=v
+best=score
 winner=p
 
 }
 
 })
 
-if(winner.name=="YOU"){
+winner.chips+=pot
 
-chips+=pot
-tip("You win "+pot+"!")
+if(winner.name=="YOU" && winner.chips>high){
 
-}else{
-
-tip(winner.name+" wins.")
+high=winner.chips
+localStorage.setItem("pokerHigh",high)
 
 }
+
+msg(winner.name+" wins $"+pot)
 
 pot=0
 
-if(chips>high){
+render()
 
-high=chips
-localStorage.setItem("davePokerHigh",high)
+setTimeout(startRound,3000)
 
 }
 
-setTimeout(startRound,2500)
+/* ---------- MESSAGE ---------- */
 
-render()
+function msg(t){
+
+msgEl.innerText=t
 
 }
 
@@ -557,8 +506,8 @@ render()
 
 window.onload=()=>{
 
-let saved=localStorage.getItem("davePokerHigh")
-if(saved) high=parseInt(saved)
+let saved=localStorage.getItem("pokerHigh")
+if(saved)high=parseInt(saved)
 
 startRound()
 
