@@ -92,6 +92,7 @@ button:hover {
   <div>Coins per Click: <span id="perClick">1</span></div>
   <div>Auto Coins/sec: <span id="autoCoins">0</span></div>
   <div>Prestige Multiplier: <span id="prestigeMultiplier">1</span></div>
+  <div>Prestige Threshold: <span id="prestigeThreshold"></span></div>
 </div>
 
 <div id="buildings"></div>
@@ -109,18 +110,22 @@ let data = JSON.parse(localStorage.getItem('daveCoinsData')) || {
   coinsPerClick: 1,
   autoCoinsPerSec: 0,
   prestigeMultiplier: 1,
+  prestigeCount: 0,
   buildings: {
-    farmer: { count: 0, cost: 10, baseCost: 10, rate: 1 },
-    tractor: { count: 0, cost: 100, baseCost: 100, rate: 10 },
-  },
-  achievements: {}
+    farmer: { count: 0, cost: 10, baseCost: 10, rate: 1, unlocked: false },
+    tractor: { count: 0, cost: 100, baseCost: 100, rate: 10, unlocked: false },
+  }
 };
+
+// Initial prestige threshold
+let prestigeThreshold = 1000;
 
 // Elements
 const moneySpan = document.getElementById('money');
 const perClickSpan = document.getElementById('perClick');
 const autoCoinsSpan = document.getElementById('autoCoins');
 const prestigeSpan = document.getElementById('prestigeMultiplier');
+const prestigeThresholdSpan = document.getElementById('prestigeThreshold');
 
 const dave = document.getElementById('dave');
 const btnClickUpgrade = document.getElementById('clickUpgrade');
@@ -135,12 +140,14 @@ const buildingTypes = [
     name: 'Amish Farmer',
     baseCost: 10,
     rate: 1,
+    unlockPrestige: 1, // unlock after 1 prestige
   },
   {
     key: 'tractor',
     name: 'Bright Orange Tractor',
     baseCost: 100,
     rate: 10,
+    unlockPrestige: 2, // unlock after 2 prestiges
   },
 ];
 
@@ -151,10 +158,13 @@ function save() {
 
 // Update display
 function update() {
-  moneySpan.innerText = (data.money * data.prestigeMultiplier).toFixed(2);
+  // Apply prestige multiplier
+  const totalMoney = data.money * data.prestigeMultiplier;
+  moneySpan.innerText = totalMoney.toFixed(2);
   perClickSpan.innerText = data.coinsPerClick;
   autoCoinsSpan.innerText = getTotalAutoIncome().toFixed(2);
   prestigeSpan.innerText = data.prestigeMultiplier;
+  prestigeThresholdSpan.innerText = prestigeThreshold;
   updateBuildingsUI();
 }
 
@@ -163,14 +173,16 @@ function getTotalAutoIncome() {
   let total = 0;
   for (const b of buildingTypes) {
     const bData = data.buildings[b.key];
-    total += bData.count * b.rate;
+    if (bData.unlocked) {
+      total += bData.count * b.rate;
+    }
   }
   return total * data.prestigeMultiplier;
 }
 
 // Clicking Dave
 dave.addEventListener('click', () => {
-  data.money += data.coinsPerClick * data.prestigeMultiplier;
+  data.money += data.coinsPerClick;
   animateCoins();
   update();
 });
@@ -211,6 +223,10 @@ function animateCoins() {
 function buyBuilding(bKey) {
   const bConfig = buildingTypes.find(b => b.key === bKey);
   const bData = data.buildings[bKey];
+  if (!bData.unlocked) {
+    alert('This building is locked! Prestige first.');
+    return;
+  }
   // Cost scales exponentially
   const cost = bData.cost;
   if (data.money >= cost) {
@@ -226,58 +242,73 @@ function buyBuilding(bKey) {
 
 // UI for buildings
 function updateBuildingsUI() {
-  buildingsDiv.innerHTML = '';
+  document.querySelector('#buildings').innerHTML = '';
   for (const b of buildingTypes) {
     const bData = data.buildings[b.key];
-    const div = document.createElement('div');
-    div.className = 'building';
-    div.innerHTML = `
-      <h3>${b.name}</h3>
-      <div>Owned: ${bData.count}</div>
-      <div>Cost: $${bData.cost}</div>
-      <div>Produces: ${(bData.rate * bData.count)} coins/sec</div>
-      <button onclick="buyBuilding('${b.key}')">Buy ${b.name}</button>
-    `;
-    document.body.querySelector('#buildings').appendChild(div);
+    // Check unlock condition
+    if (bData.unlocked) {
+      const div = document.createElement('div');
+      div.className = 'building';
+      div.innerHTML = `
+        <h3>${b.name}</h3>
+        <div>Owned: ${bData.count}</div>
+        <div>Cost: $${bData.cost}</div>
+        <div>Produces: ${(bData.rate * bData.count)} coins/sec</div>
+        <button onclick="buyBuilding('${b.key}')">Buy ${b.name}</button>
+      `;
+      document.querySelector('#buildings').appendChild(div);
+    }
   }
 }
 
 // Event listeners for upgrades
-document.getElementById('clickUpgrade').onclick = () => {
+btnClickUpgrade.onclick = () => {
   if (data.money >= 10) {
     data.money -= 10;
-    data.coinsPerClick++;
+    // Increase the amount of click each time
+    data.coinsPerClick += 1;
     update();
   } else {
     alert('Not enough Dave Coins!');
   }
 };
-document.getElementById('autoUpgrade').onclick = () => {
-  if (data.money >= 50) {
-    data.money -= 50;
+
+let autoUpgradeCost = 50; // initial cost
+btnAutoUpgrade.onclick = () => {
+  if (data.money >= autoUpgradeCost) {
+    data.money -= autoUpgradeCost;
     data.autoCoinsPerSec++;
+    // Increase cost for next purchase
+    autoUpgradeCost = Math.round(autoUpgradeCost * 1.25);
     update();
   } else {
     alert('Not enough Dave Coins!');
   }
 };
-document.getElementById('prestigeBtn').onclick = () => {
-  if (data.money >= 1000) {
-    // Reset and gain multiplier
-    const gainedMultiplier = Math.floor(data.money / 1000);
+
+btnPrestige.onclick = () => {
+  if (data.money >= prestigeThreshold) {
+    // Calculate how many times you can prestige
+    const gainedMultiplier = Math.floor(data.money / prestigeThreshold);
     data.prestigeMultiplier += gainedMultiplier;
+    data.prestigeCount += gainedMultiplier;
+
     // Reset progress
     data.money = 0;
     data.coinsPerClick = 1;
     data.autoCoinsPerSec = 0;
+
+    // Reset buildings
     for (const b of Object.keys(data.buildings)) {
       data.buildings[b].count = 0;
-      data.buildings[b].cost = buildingTypes.find(bt => bt.key === b).baseCost;
     }
+
+    // Increase prestige threshold for next time
+    prestigeThreshold = Math.round(prestigeThreshold * 1.5);
     alert(`Prestiged! Multiplier increased by ${gainedMultiplier}.`);
     update();
   } else {
-    alert('Earn at least 1000 Dave Coins to prestige.');
+    alert(`Earn at least ${prestigeThreshold} Dave Coins to prestige.`);
   }
 };
 
@@ -285,11 +316,23 @@ document.getElementById('prestigeBtn').onclick = () => {
 setInterval(() => {
   let totalAuto = 0;
   for (const b of buildingTypes) {
-    totalAuto += data.buildings[b.key].count * b.rate;
+    const bData = data.buildings[b.key];
+    if (bData.unlocked) {
+      totalAuto += bData.count * b.rate;
+    }
   }
   data.money += totalAuto * data.prestigeMultiplier;
   update();
 }, 1000);
+
+// Unlock buildings based on prestige count
+function checkBuildingUnlocks() {
+  for (const b of buildingTypes) {
+    if (b.unlockPrestige <= data.prestigeCount) {
+      data.buildings[b.key].unlocked = true;
+    }
+  }
+}
 
 // Load from local storage
 function load() {
@@ -298,10 +341,16 @@ function load() {
   }
 }
 load();
+
+// Initialize unlocks
+checkBuildingUnlocks();
 update();
 
 // Save periodically
-setInterval(save, 5000);
+setInterval(() => {
+  save();
+  checkBuildingUnlocks();
+}, 5000);
 </script>
 
 </body>
