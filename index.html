@@ -53,7 +53,7 @@ canvas {
     box-shadow: 0 0 50px rgba(0,0,0,1);
 }
 #resultTitle { font-size: 28px; margin-bottom: 10px; text-transform: uppercase; }
-#resultMessage { font-size: 18px; margin-bottom: 20px; color: #ccc; }
+#resultMessage { font-size: 18px; margin-bottom: 20px; }
 .win-text { color: #ffd700; text-shadow: 0 0 10px #ffd700; }
 .lose-text { color: #ff4444; }
 /* UI Panel for bet controls and new buttons */
@@ -75,7 +75,7 @@ button {
 }
 button:active { transform: translateY(2px); box-shadow: 0 2px 0 #8b6d00; }
 button:disabled { background: #555; color: #888; box-shadow: none; cursor: not-allowed; }
-/* Additional buttons for reset */
+/* Reset button style */
 #resetBtn {
     margin-top: 10px;
     padding: 10px 20px;
@@ -85,12 +85,29 @@ button:disabled { background: #555; color: #888; box-shadow: none; cursor: not-a
 #resetBtn:hover {
     background: #ffd700; color: #000;
 }
+/* Highscore display style (improved) */
+#highscoreDisplay {
+    margin-top: 20px;
+    font-size: 24px; /* Bigger font for prominence */
+    color: #ffd700;
+    font-weight: bold;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+    border: 3px solid #ffd700;
+    border-radius: 10px;
+    padding: 12px;
+    background: rgba(0,0,0,0.5);
+    text-align: center;
+    box-shadow: 0 0 10px #ffd700;
+}
 .hint { margin-top: 10px; color: #aaa; font-size: 12px; }
 /* Responsive adjustments */
 @media (max-width: 480px) {
     .ui-panel { flex-direction: column; }
     select { max-width: 100%; width: 100%; }
     button { width: 100%; }
+    #resetBtn { width: 100%; }
 }
 </style>
 </head>
@@ -103,7 +120,7 @@ button:disabled { background: #555; color: #888; box-shadow: none; cursor: not-a
 <!-- Highscore display -->
 <div id="highscoreDisplay">Highscore: 0</div>
 
-<!-- Buttons for reset -->
+<!-- Reset button -->
 <div style="margin-top:10px; display:flex; justify-content:center; gap:10px;">
     <button id="resetBtn">Reset Game</button>
 </div>
@@ -337,7 +354,7 @@ function showCustomPopup(title, message) {
 }
 
 document.getElementById('resetBtn').addEventListener('click', () => {
-    balance = 2000;
+    balance = 2000; // reset to 2000
     highscore = 0;
     localStorage.setItem('horseHighscore', highscore);
     highscoreDisplay.innerText = 'Highscore: ' + highscore;
@@ -366,7 +383,7 @@ window.addEventListener('keydown', (e) => {
     }
 });
 
-// Initialize
+// Initialize game
 initHorses();
 renderAll();
 </script>
