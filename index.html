@@ -3,15 +3,15 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Dave Coins Idle Game</title>
+<title>Dave Coins - Idle Clicker Game</title>
 <style>
 body {
   background: linear-gradient(to right, #ffcc00, #ff6600);
   font-family: 'Arial', sans-serif;
   margin: 0;
   padding: 20px;
-  text-align: center;
   color: #fff;
+  overflow-x: hidden;
 }
 h1 {
   font-size: 2em;
@@ -31,39 +31,34 @@ h1 {
 }
 #stats {
   margin-top: 20px;
-  font-size: 1.2em;
-}
-#money {
-  font-size: 2em;
-  margin: 10px 0;
-}
-#upgrades {
-  margin-top: 20px;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
+  gap: 15px;
 }
-button {
-  background: #fff;
-  color: #ff6600;
-  border: none;
-  padding: 10px 20px;
-  margin: 10px;
+#stats div {
+  background: rgba(255,255,255,0.2);
+  padding: 10px 15px;
   border-radius: 10px;
-  font-weight: bold;
-  cursor: pointer;
-  box-shadow: 0 0 10px #fff;
-  font-size: 1em;
-  transition: background 0.3s;
+  min-width: 150px;
 }
-button:hover {
+#progressBarContainer {
+  width: 80%;
+  max-width: 600px;
+  margin: 20px auto;
+  background: rgba(255,255,255,0.2);
+  border-radius: 10px;
+  height: 20px;
+}
+#progressBar {
+  height: 100%;
+  width: 0%;
   background: #ffcc00;
+  border-radius: 10px;
+  transition: width 0.3s;
 }
 #buildings {
   margin-top: 20px;
-  max-width: 800px;
-  margin-left: auto;
-  margin-right: auto;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
@@ -73,18 +68,60 @@ button:hover {
   border-radius: 10px;
   padding: 10px;
   margin: 10px;
-  flex: 1 1 200px;
-  max-width: 250px;
+  flex: 1 1 250px;
+  max-width: 300px;
+  box-shadow: inset 0 0 10px rgba(255,255,255,0.3);
 }
 .building h3 {
   margin-top: 0;
+}
+#achievements {
+  margin-top: 30px;
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 10px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 10px;
+}
+.achievement {
+  padding: 8px;
+  margin: 4px 0;
+  border-radius: 5px;
+  transition: background 0.3s;
+}
+.achievement.locked {
+  opacity: 0.5;
+}
+.achievement.unlocked {
+  background: rgba(255,255,255,0.3);
+  font-weight: bold;
+}
+#notifications {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  max-width: 300px;
+  z-index: 999;
+}
+.notification {
+  background: rgba(255,255,255,0.2);
+  margin: 5px 0;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 0.9em;
+  animation: fadeOut 3s forwards;
+}
+@keyframes fadeOut {
+  0% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-20px); }
 }
 </style>
 </head>
 <body>
 
 <h1>Dave Coins - Idle Clicker</h1>
-<!-- Your provided Dave image -->
 <img src="https://i.imgur.com/1UfrW92.png" id="dave" alt="Dave" />
 
 <div id="stats">
@@ -92,15 +129,31 @@ button:hover {
   <div>Coins per Click: <span id="perClick">1</span></div>
   <div>Auto Coins/sec: <span id="autoCoins">0</span></div>
   <div>Prestige Multiplier: <span id="prestigeMultiplier">1</span></div>
+  <div>Bonus: <span id="bonusPercent">0</span>%</div>
+</div>
+
+<div id="progressBarContainer">
+  <div id="progressBar"></div>
 </div>
 
 <div id="buildings"></div>
+
+<div style="text-align: center; margin-top:20px;">
+  <button id="maxBuy">Buy Max Buildings</button>
+  <button id="resetBtn">Reset Progress</button>
+</div>
 
 <div id="upgrades">
   <button id="clickUpgrade">Increase Click (+1) ($10)</button>
   <button id="autoUpgrade">Add Auto Coin (+1/sec) ($50)</button>
   <button id="prestigeBtn">Prestige (Reset & Gain Multiplier)</button>
 </div>
+
+<h2>Achievements</h2>
+<div id="achievements"></div>
+
+<!-- Notification container -->
+<div id="notifications"></div>
 
 <script>
 // Persistent data
@@ -109,69 +162,81 @@ let data = JSON.parse(localStorage.getItem('daveCoinsData')) || {
   coinsPerClick: 1,
   autoCoinsPerSec: 0,
   prestigeMultiplier: 1,
+  bonusPercent: 0,
   buildings: {
     farmer: { count: 0, cost: 10, baseCost: 10, rate: 1 },
     tractor: { count: 0, cost: 100, baseCost: 100, rate: 10 },
   },
-  achievements: {}
+  achievements: {},
+  clickCount: 0,
+  totalClicks: 0,
 };
+
+// Achievements list
+const achievementsList = [
+  { id: 'first_100', desc: 'Earn 100 Dave Coins', condition: () => (getTotalCoins() >= 100) },
+  { id: 'buy_10_farmers', desc: 'Buy 10 Farmers', condition: () => (data.buildings.farmer.count >= 10) },
+  { id: 'reach_1k', desc: 'Reach 1,000 Dave Coins', condition: () => (getTotalCoins() >= 1000) },
+  { id: 'click_100', desc: 'Click 100 times', condition: () => (data.clickCount >= 100) },
+];
 
 // Elements
 const moneySpan = document.getElementById('money');
 const perClickSpan = document.getElementById('perClick');
 const autoCoinsSpan = document.getElementById('autoCoins');
 const prestigeSpan = document.getElementById('prestigeMultiplier');
+const bonusSpan = document.getElementById('bonusPercent');
 
 const dave = document.getElementById('dave');
 const btnClickUpgrade = document.getElementById('clickUpgrade');
 const btnAutoUpgrade = document.getElementById('autoUpgrade');
 const btnPrestige = document.getElementById('prestigeBtn');
-const buildingsDiv = document.getElementById('buildings');
+const buildingsDiv = document.querySelector('#buildings');
 
-// Buildings data
+const achievementsDiv = document.getElementById('achievements');
+const notificationsDiv = document.getElementById('notifications');
+
 const buildingTypes = [
-  {
-    key: 'farmer',
-    name: 'Amish Farmer',
-    baseCost: 10,
-    rate: 1,
-  },
-  {
-    key: 'tractor',
-    name: 'Bright Orange Tractor',
-    baseCost: 100,
-    rate: 10,
-  },
+  { key: 'farmer', name: 'Amish Farmer', baseCost: 10, rate: 1 },
+  { key: 'tractor', name: 'Bright Orange Tractor', baseCost: 100, rate: 10 },
 ];
 
-// Save data
-function save() {
-  localStorage.setItem('daveCoinsData', JSON.stringify(data));
+// Save/load functions
+function save() { localStorage.setItem('daveCoinsData', JSON.stringify(data)); }
+function load() { if (localStorage.getItem('daveCoinsData')) { data = JSON.parse(localStorage.getItem('daveCoinsData')); } }
+load();
+
+// Get total coins
+function getTotalCoins() {
+  return data.money * data.prestigeMultiplier;
 }
 
 // Update display
 function update() {
-  moneySpan.innerText = (data.money * data.prestigeMultiplier).toFixed(2);
-  perClickSpan.innerText = data.coinsPerClick;
-  autoCoinsSpan.innerText = getTotalAutoIncome().toFixed(2);
-  prestigeSpan.innerText = data.prestigeMultiplier;
-  updateBuildingsUI();
-}
+  // Update stats
+  document.getElementById('money').innerText = getTotalCoins().toFixed(2);
+  document.getElementById('perClick').innerText = data.coinsPerClick;
+  document.getElementById('autoCoins').innerText = getTotalAutoIncome().toFixed(2);
+  document.getElementById('prestigeMultiplier').innerText = data.prestigeMultiplier;
+  document.getElementById('bonusPercent').innerText = data.bonusPercent;
 
-// Calculate total auto income
-function getTotalAutoIncome() {
-  let total = 0;
-  for (const b of buildingTypes) {
-    const bData = data.buildings[b.key];
-    total += bData.count * b.rate;
-  }
-  return total * data.prestigeMultiplier;
+  // Update progress bar (auto coins/sec)
+  const autoIncome = getTotalAutoIncome();
+  const maxAuto = 100; // for demo, max 100 auto/sec
+  const widthPercent = Math.min(autoIncome / maxAuto * 100, 100);
+  document.getElementById('progressBar').style.width = widthPercent + '%';
+
+  updateBuildingsUI();
+  updateAchievements();
 }
 
 // Clicking Dave
 dave.addEventListener('click', () => {
   data.money += data.coinsPerClick * data.prestigeMultiplier;
   animateCoins();
+  data.clickCount++;
+  data.totalClicks++;
+  checkAchievements();
   update();
 });
 
@@ -181,25 +246,26 @@ function animateCoins() {
     const coin = document.createElement('div');
     coin.innerText = '🪙';
     coin.style.position = 'absolute';
-    coin.style.left = dave.offsetLeft + 'px';
-    coin.style.top = dave.offsetTop + 'px';
+    const rect = dave.getBoundingClientRect();
+    coin.style.left = (rect.left + rect.width/2 + Math.random()*50 -25 + window.scrollX)+'px';
+    coin.style.top = (rect.top + rect.height/2 + Math.random()*50 -25 + window.scrollY)+'px';
     coin.style.fontSize = '24px';
     coin.style.opacity = 1;
-    document.body.appendChild(coin);
-    const targetX = window.innerWidth*Math.random();
-    const targetY = window.innerHeight*Math.random();
+    notificationsDiv.appendChild(coin);
+    const targetX = Math.random()*window.innerWidth;
+    const targetY = Math.random()*window.innerHeight;
     const duration = 1000 + Math.random()*500;
     const startTime = performance.now();
 
     function animate() {
       const elapsed = performance.now() - startTime;
       if (elapsed > duration) {
-        document.body.removeChild(coin);
+        notificationsDiv.removeChild(coin);
         return;
       }
       const progress = elapsed / duration;
-      coin.style.left = (dave.offsetLeft + (targetX - dave.offsetLeft) * progress) + 'px';
-      coin.style.top = (dave.offsetTop + (targetY - dave.offsetTop) * progress) + 'px';
+      coin.style.left = (parseFloat(coin.style.left) + (targetX - parseFloat(coin.style.left)) * progress) + 'px';
+      coin.style.top = (parseFloat(coin.style.top) + (targetY - parseFloat(coin.style.top)) * progress) + 'px';
       coin.style.opacity = 1 - progress;
       requestAnimationFrame(animate);
     }
@@ -211,12 +277,10 @@ function animateCoins() {
 function buyBuilding(bKey) {
   const bConfig = buildingTypes.find(b => b.key === bKey);
   const bData = data.buildings[bKey];
-  // Cost scales exponentially
   const cost = bData.cost;
   if (data.money >= cost) {
     data.money -= cost;
     bData.count++;
-    // Increase cost exponentially
     bData.cost = Math.round(bData.cost * 1.15);
     update();
   } else {
@@ -224,9 +288,20 @@ function buyBuilding(bKey) {
   }
 }
 
-// UI for buildings
+// Max buy buildings
+function buyMaxBuildings() {
+  for (const b of buildingTypes) {
+    const bData = data.buildings[b.key];
+    while (data.money >= bData.cost) {
+      buyBuilding(b.key);
+    }
+  }
+}
+
+// Update buildings UI
 function updateBuildingsUI() {
-  buildingsDiv.innerHTML = '';
+  const container = document.querySelector('#buildings');
+  container.innerHTML = '';
   for (const b of buildingTypes) {
     const bData = data.buildings[b.key];
     const div = document.createElement('div');
@@ -235,36 +310,72 @@ function updateBuildingsUI() {
       <h3>${b.name}</h3>
       <div>Owned: ${bData.count}</div>
       <div>Cost: $${bData.cost}</div>
-      <div>Produces: ${(bData.rate * bData.count)} coins/sec</div>
+      <div>Produces: ${(bData.count * b.rate)} coins/sec</div>
       <button onclick="buyBuilding('${b.key}')">Buy ${b.name}</button>
     `;
-    document.body.querySelector('#buildings').appendChild(div);
+    container.appendChild(div);
   }
 }
 
-// Event listeners for upgrades
+// Calculate total auto income
+function getTotalAutoIncome() {
+  let total = 0;
+  for (const b of buildingTypes) {
+    total += data.buildings[b.key].count * b.rate;
+  }
+  return total * data.prestigeMultiplier;
+}
+
+// Check achievements
+function checkAchievements() {
+  for (const ach of achievementsList) {
+    if (!data.achievements[ach.id] && ach.condition()) {
+      data.achievements[ach.id] = true;
+      showNotification(`Achievement unlocked: ${ach.desc}`);
+    }
+  }
+}
+
+// Update achievements display
+function updateAchievements() {
+  achievementsDiv.innerHTML = '';
+  for (const ach of achievementsList) {
+    const div = document.createElement('div');
+    div.className = 'achievement' + (data.achievements[ach.id] ? ' unlocked' : ' locked');
+    div.innerText = ach.desc;
+    achievementsDiv.appendChild(div);
+  }
+}
+
+// Notifications
+function showNotification(text) {
+  const notif = document.createElement('div');
+  notif.className = 'notification';
+  notif.innerText = text;
+  notificationsDiv.appendChild(notif);
+  setTimeout(() => {
+    notif.remove();
+  }, 3000);
+}
+
+// Event handlers
 document.getElementById('clickUpgrade').onclick = () => {
   if (data.money >= 10) {
     data.money -= 10;
     data.coinsPerClick++;
     update();
-  } else {
-    alert('Not enough Dave Coins!');
-  }
+  } else alert('Not enough Dave Coins!');
 };
 document.getElementById('autoUpgrade').onclick = () => {
   if (data.money >= 50) {
     data.money -= 50;
     data.autoCoinsPerSec++;
     update();
-  } else {
-    alert('Not enough Dave Coins!');
-  }
+  } else alert('Not enough Dave Coins!');
 };
 document.getElementById('prestigeBtn').onclick = () => {
-  if (data.money >= 1000) {
-    // Reset and gain multiplier
-    const gainedMultiplier = Math.floor(data.money / 1000);
+  if (getTotalCoins() >= 1000) {
+    const gainedMultiplier = Math.floor(getTotalCoins() / 1000);
     data.prestigeMultiplier += gainedMultiplier;
     // Reset progress
     data.money = 0;
@@ -274,33 +385,34 @@ document.getElementById('prestigeBtn').onclick = () => {
       data.buildings[b].count = 0;
       data.buildings[b].cost = buildingTypes.find(bt => bt.key === b).baseCost;
     }
-    alert(`Prestiged! Multiplier increased by ${gainedMultiplier}.`);
+    showNotification(`Prestiged! Multiplier +${gainedMultiplier}`);
+    checkAchievements();
     update();
-  } else {
-    alert('Earn at least 1000 Dave Coins to prestige.');
+  } else alert('Earn at least 1000 Dave Coins to prestige.');
+};
+document.getElementById('resetBtn').onclick = () => {
+  if (confirm('Are you sure you want to reset all progress?')) {
+    localStorage.removeItem('daveCoinsData');
+    location.reload();
   }
 };
-
-// Auto coins per second
-setInterval(() => {
-  let totalAuto = 0;
-  for (const b of buildingTypes) {
-    totalAuto += data.buildings[b.key].count * b.rate;
-  }
-  data.money += totalAuto * data.prestigeMultiplier;
+document.getElementById('maxBuy').onclick = () => {
+  buyMaxBuildings();
   update();
+};
+
+// Auto coins production
+setInterval(() => {
+  const totalAuto = getTotalAutoIncome();
+  if (totalAuto > 0) {
+    data.money += totalAuto;
+    update();
+  }
 }, 1000);
 
-// Load from local storage
-function load() {
-  if (localStorage.getItem('daveCoinsData')) {
-    data = JSON.parse(localStorage.getItem('daveCoinsData'));
-  }
-}
+// Load and start
 load();
 update();
-
-// Save periodically
 setInterval(save, 5000);
 </script>
 
