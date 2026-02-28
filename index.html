@@ -2,280 +2,302 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Dave Poker</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-:root { --felt-green: #386641; --dark-bg: #1a202c; --card-red: #cc0000; }
-body { font-family: 'Inter', sans-serif; background-color: var(--dark-bg); color: #e2e8f0; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; }
-#game-container { width: 100%; max-width: 900px; background-color: #2d3748; padding: 1rem; display: flex; flex-direction: column; gap: 1rem; overflow-y: auto; border-radius: 1rem; }
-.card-slot { width: 48px; height: 72px; perspective: 1000px; display: inline-block; margin: 0 2px; vertical-align: middle; }
-.card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); transform-style: preserve-3d; }
-.card-slot.flipped .card-inner { transform: rotateY(180deg); }
-.card-front, .card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 0.4rem; box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3); display: flex; flex-direction: column; justify-content: space-between; padding: 2px 0; font-weight: 800; overflow: hidden; }
-.card-front { background: white; color: black; transform: rotateY(180deg); }
-.card-back { background: linear-gradient(145deg, #a73737, #d94848); border: 2px solid gold; transform: rotateY(0deg); }
-.card-red { color: var(--card-red); }
-.rank-top { font-size: 0.75rem; text-align: center; width: 100%; line-height: 1; margin-top: 2px; }
-.suit-center { font-size: 1.4rem; text-align: center; width: 100%; flex-grow: 1; display: flex; align-items: center; justify-content: center; }
-.rank-bottom { font-size: 0.75rem; text-align: center; width: 100%; line-height: 1; margin-bottom: 2px; transform: rotate(180deg); }
-button { cursor: pointer; }
-
-@keyframes dealCardAnim {
-  0% { transform: translateY(-300px) rotate(25deg); opacity: 0; }
-  100% { transform: translateY(0) rotate(0); opacity: 1; }
+@import url('https://fonts.googleapis.com/css2?family=Inter&display=swap');
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: #1a202c;
+  color: #e2e8f0;
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
 }
-.new-card { animation: dealCardAnim 0.4s ease-out; }
+#game {
+  max-width: 900px;
+  width: 100%;
+  padding: 1rem;
+  background: #2d3748;
+  border-radius: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+h1 {
+  text-align: center;
+  font-size: 2rem;
+  font-weight: bold;
+  color: #ffd700;
+}
+.cards {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 0.5rem;
+}
+.card {
+  width: 48px;
+  height: 72px;
+  perspective: 1000px;
+}
+.card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.6s;
+  transform-style: preserve-3d;
+}
+.flipped .card-inner {
+  transform: rotateY(180deg);
+}
+.card-front, .card-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  border-radius: 0.4rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 2px 0;
+  font-weight: bold;
+  font-size: 0.75rem;
+}
+.card-front {
+  background: #fff;
+  color: #000;
+  transform: rotateY(0deg);
+}
+.card-back {
+  background: linear-gradient(145deg, #a73737, #d94848);
+  border: 2px solid #ffd700;
+  transform: rotateY(180deg);
+}
+button {
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: bold;
+  cursor: pointer;
+  margin: 0.25rem;
+}
+#buttons {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+#status {
+  text-align: center;
+  margin-top: 0.5rem;
+  min-height: 1.5rem;
+}
 </style>
 </head>
 <body>
 
-<div id="game-container">
-<h1 class="text-4xl font-bold text-center text-yellow-400 mb-4">DAVE POKER</h1>
-
-<!-- Players area -->
-<div id="players-area" class="flex flex-col gap-4">
-<!-- Dealer -->
-<div class="bg-gray-700 p-2 rounded-lg">
-<h2 class="text-lg font-semibold text-center mb-2">Dealer</h2>
-<div class="flex justify-center" id="dealer-hand"></div>
-<div class="text-center mt-2" id="dealer-status"></div>
-</div>
-
-<!-- Players + bots -->
-<div class="flex flex-col gap-4" id="players-list">
-<!-- Player -->
-<div class="bg-gray-700 p-2 rounded-lg">
-<h2 class="text-lg font-semibold mb-2">You</h2>
-<div class="flex justify-center" id="player-hand"></div>
-<div class="mt-2">Chips: <span id="player-chips">$2000</span></div>
-<div class="mt-2">Bet: <span id="player-bet">$0</span></div>
-<div class="mt-2" id="player-status"></div>
-</div>
-<!-- Bot 1 -->
-<div class="bg-gray-700 p-2 rounded-lg">
-<h2 class="text-lg font-semibold mb-2">Bot 1</h2>
-<div class="flex justify-center" id="bot1-hand"></div>
-<div class="mt-2">Chips: <span id="bot1-chips">$2000</span></div>
-<div class="mt-2">Bet: <span id="bot1-bet">$0</span></div>
-<div class="mt-2" id="bot1-status"></div>
-</div>
-<!-- Bot 2 -->
-<div class="bg-gray-700 p-2 rounded-lg">
-<h2 class="text-lg font-semibold mb-2">Bot 2</h2>
-<div class="flex justify-center" id="bot2-hand"></div>
-<div class="mt-2">Chips: <span id="bot2-chips">$2000</span></div>
-<div class="mt-2">Bet: <span id="bot2-bet">$0</span></div>
-<div class="mt-2" id="bot2-status"></div>
-</div>
-</div>
-</div>
-
-<!-- Controls -->
-<div class="mt-4 flex flex-col items-center gap-2">
-<button id="start-btn" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-bold transition">Start Hand</button>
-<div id="bet-controls" class="flex gap-2 hidden">
-<button id="bet-10" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">Bet $10</button>
-<button id="bet-50" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">Bet $50</button>
-<button id="bet-all" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg">All In</button>
-</div>
-<!-- Player action buttons -->
-<div class="flex gap-2 mt-2">
-<button id="call-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg font-bold hidden">Call</button>
-<button id="raise-btn" class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg hidden">Raise</button>
-<button id="fold-btn" class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg font-bold hidden">Fold</button>
-</div>
-<button id="next-btn" class="bg-yellow-500 hover:bg-yellow-600 text-black px-6 py-2 rounded-lg font-bold hidden">Next Hand</button>
-</div>
+<div id="game">
+  <h1>DAVE POKER</h1>
+  <!-- Dealer -->
+  <div>
+    <h2 class="text-lg font-semibold text-center mb-2">Dealer</h2>
+    <div class="cards" id="dealer-cards"></div>
+    <div class="text-center" id="dealer-status"></div>
+  </div>
+  <!-- Player & Bots -->
+  <div>
+    <h2 class="text-lg font-semibold mb-2">Players</h2>
+    <div class="grid grid-cols-3 gap-4">
+      <div class="bg-gray-700 p-2 rounded-lg">
+        <h3 class="text-sm mb-1">You</h3>
+        <div class="cards" id="player-cards"></div>
+        <div>Chips: <span id="player-chips">2000</span></div>
+        <div>Bet: <span id="player-bet">0</span></div>
+        <div id="player-status"></div>
+      </div>
+      <div class="bg-gray-700 p-2 rounded-lg">
+        <h3 class="text-sm mb-1">Bot 1</h3>
+        <div class="cards" id="bot1-cards"></div>
+        <div>Chips: <span id="bot1-chips">2000</span></div>
+        <div>Bet: <span id="bot1-bet">0</span></div>
+        <div id="bot1-status"></div>
+      </div>
+      <div class="bg-gray-700 p-2 rounded-lg">
+        <h3 class="text-sm mb-1">Bot 2</h3>
+        <div class="cards" id="bot2-cards"></div>
+        <div>Chips: <span id="bot2-chips">2000</span></div>
+        <div>Bet: <span id="bot2-bet">0</span></div>
+        <div id="bot2-status"></div>
+      </div>
+    </div>
+  </div>
+  <!-- Buttons -->
+  <div style="margin-top:1rem; text-align:center;">
+    <button id="start-btn" class="bg-green-600 hover:bg-green-700 text-white">Start Hand</button>
+    <div id="bet-buttons" style="margin-top:1rem; display:none;">
+      <button id="bet-10" class="bg-blue-600 hover:bg-blue-700 text-white">Bet $10</button>
+      <button id="bet-50" class="bg-blue-600 hover:bg-blue-700 text-white">Bet $50</button>
+      <button id="bet-all" class="bg-red-600 hover:bg-red-700 text-white">All In</button>
+    </div>
+    <div style="margin-top:1rem;">
+      <button id="call-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white" style="display:none;">Call</button>
+      <button id="raise-btn" class="bg-purple-600 hover:bg-purple-700 text-white" style="display:none;">Raise</button>
+      <button id="fold-btn" class="bg-gray-600 hover:bg-gray-700 text-white" style="display:none;">Fold</button>
+    </div>
+    <button id="next-btn" class="bg-yellow-500 hover:bg-yellow-600 text-black" style="margin-top:1rem; display:none;">Next Hand</button>
+  </div>
+  <div id="status"></div>
 </div>
 
 <script>
-// Setup
 const SUITS = ['♥', '♦', '♣', '♠'];
 const RANKS = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+
 let deck = [];
 let players = [
-  { name: 'You', chips: 2000, hand: [], bet: 0, status: 'waiting' },
+  { name: 'Player', chips: 2000, hand: [], bet: 0, status: 'waiting' },
   { name: 'Bot1', chips: 2000, hand: [], bet: 0, status: 'waiting' },
   { name: 'Bot2', chips: 2000, hand: [], bet: 0, status: 'waiting' },
 ];
 let dealer = { hand: [], status: 'waiting' };
 let communityCards = [];
 let pot = 0;
-let currentPlayerIndex = 0;
+let currentPlayerIdx = 0;
 let phase = 'waiting'; // 'waiting', 'pre-flop', 'flop', 'turn', 'river', 'showdown'
-
-const elements = {
-  playerHand: document.getElementById('player-hand'),
-  dealerHand: document.getElementById('dealer-hand'),
-  bot1Hand: document.getElementById('bot1-hand'),
-  bot2Hand: document.getElementById('bot2-hand'),
-  playerChips: document.getElementById('player-chips'),
-  bot1Chips: document.getElementById('bot1-chips'),
-  bot2Chips: document.getElementById('bot2-chips'),
-  playerBet: document.getElementById('player-bet'),
-  bot1Bet: document.getElementById('bot1-bet'),
-  bot2Bet: document.getElementById('bot2-bet'),
-  playerStatus: document.getElementById('player-status'),
-  bot1Status: document.getElementById('bot1-status'),
-  bot2Status: document.getElementById('bot2-status'),
-  dealerStatus: document.getElementById('dealer-status'),
-  startBtn: document.getElementById('start-btn'),
-  betControls: document.getElementById('bet-controls'),
-  bet10Btn: document.getElementById('bet-10'),
-  bet50Btn: document.getElementById('bet-50'),
-  betAllBtn: document.getElementById('bet-all'),
-  callBtn: document.getElementById('call-btn'),
-  raiseBtn: document.getElementById('raise-btn'),
-  foldBtn: document.getElementById('fold-btn'),
-  nextBtn: document.getElementById('next-btn'),
-};
 
 // Utility functions
 function createDeck() {
   deck = [];
   for (const suit of SUITS) {
     for (const rank of RANKS) {
-      let value = (['J', 'Q', 'K'].includes(rank)) ? 10 : (rank === 'A') ? 14 : parseInt(rank);
+      let value = (['J', 'Q', 'K'].includes(rank)) ? 10 : (rank==='A') ? 14 : parseInt(rank);
       deck.push({ suit, rank, value });
     }
   }
   // Shuffle
-  for (let i = deck.length -1; i >0; i--) {
-    const j = Math.floor(Math.random() * (i+1));
+  for (let i=deck.length-1; i>0; i--) {
+    const j = Math.floor(Math.random()*(i+1));
     [deck[i], deck[j]] = [deck[j], deck[i]];
   }
 }
 
-function dealCard(player) {
-  const card = deck.pop();
-  player.hand.push(card);
-  return card;
+// Create card element with animation
+function createCardEl(card, faceUp=true) {
+  const el = document.createElement('div');
+  el.className='card';
+  el.innerHTML=`
+  <div class="card-inner ${faceUp?'':'flipped'}">
+    <div class="card-front">${faceUp?card.rank+' '+card.suit:''}</div>
+    <div class="card-back"></div>
+  </div>`;
+  return el;
+}
+
+function showHand(player, containerId, hideFirst=false) {
+  const container = document.getElementById(containerId);
+  container.innerHTML='';
+  player.hand.forEach((c,i)=>{
+    if (hideFirst && i===0 && player===dealer) {
+      const faceUp=false;
+      container.appendChild(createCardEl({rank:'?',suit:'?'}, faceUp));
+    } else {
+      container.appendChild(createCardEl(c));
+    }
+  });
 }
 
 function updateChipsUI() {
-  for (let p of players) {
-    document.getElementById(`${p.name.toLowerCase().replace(' ','')}-chips`).textContent = `$${p.chips}`;
-    document.getElementById(`${p.name.toLowerCase().replace(' ','')}-bet`).textContent = `$${p.bet}`;
-  }
-}
-
-// Card display
-function createCardEl(card, faceUp=true) {
-  const slot = document.createElement('div');
-  slot.className = `card-slot ${faceUp?'':'flipped'}`;
-  slot.innerHTML = `
-    <div class="card-inner ${faceUp?'new-card':''}">
-      <div class="card-back"></div>
-      <div class="card-front ${card.suit==='♥'||card.suit==='♦'?'card-red':''}">
-        <div class="rank-top">${card.rank}</div>
-        <div class="suit-center">${card.suit}</div>
-        <div class="rank-bottom">${card.rank}</div>
-      </div>
-    </div>`;
-  return slot;
-}
-
-// Show hand
-function showHand(player, containerId, hideFirst=false) {
-  const container=document.getElementById(containerId);
-  container.innerHTML='';
-  player.hand.forEach((card,i)=>{
-    let faceUp=true;
-    if (hideFirst && i===0 && player===dealer) faceUp=false;
-    const el=createCardEl(card,faceUp);
-    container.appendChild(el);
-  });
+  document.getElementById('player-chips').textContent=`$${players[0].chips}`;
+  document.getElementById('bot1-chips').textContent=`$${players[1].chips}`;
+  document.getElementById('bot2-chips').textContent=`$${players[2].chips}`;
+  document.getElementById('player-bet').textContent=`$${players[0].bet}`;
+  document.getElementById('bot1-bet').textContent=`$${players[1].bet}`;
+  document.getElementById('bot2-bet').textContent=`$${players[2].bet}`;
 }
 
 // Start a new hand
 function startHand() {
   createDeck();
-  communityCards=[]; 
-  for (let p of players){ p.hand=[]; p.bet=0; p.status='waiting'; }
+  communityCards = [];
+  for (let p of players) { p.hand=[]; p.bet=0; p.status='waiting'; }
   dealer.hand=[];
   phase='pre-flop';
   for (let p of players) { dealCard(p); dealCard(p); }
   dealCard(dealer); dealCard(dealer);
-  showHand(players[0],'player-hand');
-  showHand(players[1],'bot1-hand');
-  showHand(players[2],'bot2-hand');
-  showHand(dealer,'dealer-hand',true);
-  // Reset statuses
-  document.getElementById('player-status').textContent='';
-  document.getElementById('bot1-status').textContent='';
-  document.getElementById('bot2-status').textContent='';
-  document.getElementById('dealer-status').textContent='';
-  for (let p of players) { p.bet=0; p.status='waiting'; }
+  showHand(players[0],'player-cards');
+  showHand(players[1],'bot1-cards');
+  showHand(players[2],'bot2-cards');
+  showHand(dealer,'dealer-cards',true);
+  document.getElementById('status').textContent='';
+  // Reset bets
+  for (let p of players) p.bet=0;
   updateBetsUI();
-  // Start betting pre-flop
-  currentPlayerIndex=0;
+  currentPlayerIdx=0;
   proceedBetting();
 }
 
-// Betting sequence
+// Deal card
+function dealCard(player) {
+  const c=deck.pop();
+  player.hand.push(c);
+  return c;
+}
+
+// Proceed betting
 async function proceedBetting() {
-  if (currentPlayerIndex >= players.length) {
+  if (currentPlayerIdx>=players.length) {
     moveToNextPhase();
     return;
   }
-  let p=players[currentPlayerIndex];
+  const p=players[currentPlayerIdx];
   if (p.status==='fold') {
-    currentPlayerIndex++;
+    currentPlayerIdx++;
     proceedBetting();
     return;
   }
-  if (p.name==='You') {
-    // Enable buttons
-    document.getElementById('bet-controls').classList.remove('hidden');
-    document.getElementById('call-btn').classList.remove('hidden');
-    document.getElementById('raise-btn').classList.remove('hidden');
-    document.getElementById('fold-btn').classList.remove('hidden');
-    document.getElementById('next-btn').classList.add('hidden');
-    document.getElementById('player-status').textContent='Your turn!';
+  if (p.name==='Player') {
+    // Enable betting buttons
+    document.getElementById('bet-buttons').style.display='block';
+    document.getElementById('status').textContent='Your turn!';
   } else {
+    // Bot decision
     await sleep(800);
     let decision = botDecision(p);
     if (decision==='call') {
-      placeBet(10);
-      document.getElementById(p.name.toLowerCase().replace(' ','')+'-status').textContent='Called $10';
+      placeBet(p,10);
+      document.getElementById(p.name.toLowerCase()+'-status').textContent='Called $10';
     } else {
       p.status='fold';
-      document.getElementById(p.name.toLowerCase().replace(' ','')+'-status').textContent='Folded';
+      document.getElementById(p.name.toLowerCase()+'-status').textContent='Folded';
     }
-    currentPlayerIndex++;
+    currentPlayerIdx++;
     proceedBetting();
   }
 }
 
-// Player action
-function placeBet(amount) {
-  let p=players[currentPlayerIndex];
-  if (amount > p.chips) amount=p.chips;
-  p.bet+=amount;
-  p.chips-=amount;
+function placeBet(player,amount) {
+  if (amount>player.chips) amount=player.chips;
+  player.bet+=amount;
+  player.chips-=amount;
   updateBetsUI();
 }
 
-// Bot decision
 function botDecision(bot) {
-  if (bot.chips > 50 && Math.random() > 0.3) {
+  if (bot.chips>50 && Math.random()>0.3) {
     return 'call';
   } else {
     return 'fold';
   }
 }
 
-// Move to next phase
-async function moveToNextPhase() {
-  // Collect bets
+function moveToNextPhase() {
+  // Collect bets into pot
   let totalBet=0;
-  for (let p of players) {
-    totalBet+=p.bet;
-  }
+  for (let p of players) { totalBet+=p.bet; p.bet=0; }
   pot=totalBet;
-  for (let p of players) { p.bet=0; }
   updateBetsUI();
 
   if (phase==='pre-flop') {
@@ -285,19 +307,19 @@ async function moveToNextPhase() {
     communityCards.push(deck.pop());
     phase='flop';
     showCommunityCards();
-    startBettingRound();
+    startBetting();
   } else if (phase==='flop') {
     // Turn
     communityCards.push(deck.pop());
     phase='turn';
     showCommunityCards();
-    startBettingRound();
+    startBetting();
   } else if (phase==='turn') {
     // River
     communityCards.push(deck.pop());
     phase='river';
     showCommunityCards();
-    startBettingRound();
+    startBetting();
   } else {
     // Showdown
     phase='showdown';
@@ -305,86 +327,116 @@ async function moveToNextPhase() {
   }
 }
 
-// Show community cards
 function showCommunityCards() {
-  const container=document.getElementById('community-cards');
+  const container = document.getElementById('community-cards');
   container.innerHTML='';
-  for (let c of communityCards) {
+  communityCards.forEach(c=> {
     container.appendChild(createCardEl(c));
-  }
+  });
 }
 
-// Betting round
-function startBettingRound() {
-  currentPlayerIndex=0;
-  proceedBetting();
+function startBetting() {
+  currentPlayerIdx=0;
+  proceedPlayer();
 }
 
-// Player actions
-async function proceedBetting() {
-  if (currentPlayerIndex>=players.length) {
+async function proceedPlayer() {
+  if (currentPlayerIdx>=players.length) {
     moveToNextPhase();
     return;
   }
-  let p=players[currentPlayerIndex];
+  const p=players[currentPlayerIdx];
   if (p.status==='fold') {
-    currentPlayerIndex++;
-    proceedBetting();
+    currentPlayerIdx++;
+    proceedPlayer();
     return;
   }
-  if (p.name==='You') {
-    // Enable buttons
-    document.getElementById('bet-controls').classList.remove('hidden');
-    document.getElementById('call-btn').classList.remove('hidden');
-    document.getElementById('raise-btn').classList.remove('hidden');
-    document.getElementById('fold-btn').classList.remove('hidden');
-    document.getElementById('next-btn').classList.add('hidden');
-    document.getElementById('player-status').textContent='Your turn!';
+  if (p.name==='Player') {
+    // Show buttons
+    document.getElementById('bet-buttons').style.display='block';
+    document.getElementById('status').textContent='Your turn!';
   } else {
+    // Bot auto decision
     await sleep(800);
     let decision=botDecision(p);
     if (decision==='call') {
-      placeBet(10);
-      document.getElementById(p.name.toLowerCase().replace(' ','')+'-status').textContent='Called $10';
+      placeBet(p,10);
+      document.getElementById(p.name.toLowerCase()+'-status').textContent='Called $10';
     } else {
       p.status='fold';
-      document.getElementById(p.name.toLowerCase().replace(' ','')+'-status').textContent='Folded';
+      document.getElementById(p.name.toLowerCase()+'-status').textContent='Folded';
     }
-    currentPlayerIndex++;
-    proceedBetting();
+    currentPlayerIdx++;
+    proceedPlayer();
   }
 }
 
-// Buttons for player
-document.getElementById('start-btn').onclick=()=>{ startHand(); document.getElementById('start-btn').classList.add('hidden'); };
-document.getElementById('bet-10').onclick=()=>{ placeBet(10); currentPlayerIndex++; proceedBetting(); };
-document.getElementById('bet-50').onclick=()=>{ placeBet(50); currentPlayerIndex++; proceedBetting(); };
-document.getElementById('bet-all').onclick=()=>{ placeBet(players[0].chips); currentPlayerIndex++; proceedBetting(); };
+// Player buttons
+document.getElementById('start-btn').onclick=function() {
+  startHand();
+  this.style.display='none';
+};
+document.getElementById('bet-10').onclick=function() {
+  placeBet(players[0],10);
+  currentPlayerIdx++;
+  proceedPlayer();
+  document.getElementById('bet-buttons').style.display='none';
+};
+document.getElementById('bet-50').onclick=function() {
+  placeBet(players[0],50);
+  currentPlayerIdx++;
+  proceedPlayer();
+  document.getElementById('bet-buttons').style.display='none';
+};
+document.getElementById('bet-all').onclick=function() {
+  placeBet(players[0],players[0].chips);
+  currentPlayerIdx++;
+  proceedPlayer();
+  document.getElementById('bet-buttons').style.display='none';
+};
+document.getElementById('call-btn').onclick=function() {
+  placeBet(players[0],10);
+  document.getElementById('player-status').textContent='Called $10';
+  finalizePlayer();
+};
+document.getElementById('raise-btn').onclick=function() {
+  placeBet(players[0],20);
+  document.getElementById('player-status').textContent='Raised $20';
+  finalizePlayer();
+};
+document.getElementById('fold-btn').onclick=function() {
+  players[0].status='fold';
+  document.getElementById('player-status').textContent='Folded';
+  finalizePlayer();
+};
 
-document.getElementById('call-btn').onclick=()=> { placeBet(10); finalizePlayerAction(); };
-document.getElementById('raise-btn').onclick=()=> { placeBet(20); finalizePlayerAction(); };
-document.getElementById('fold-btn').onclick=()=> { players[0].status='fold'; finalizePlayerAction(); };
-
-function finalizePlayerAction() {
-  document.getElementById('bet-controls').classList.add('hidden');
-  document.getElementById('call-btn').classList.add('hidden');
-  document.getElementById('raise-btn').classList.add('hidden');
-  document.getElementById('fold-btn').classList.add('hidden');
-  document.getElementById('next-btn').classList.remove('hidden');
-  currentPlayerIndex++;
+function finalizePlayer() {
+  document.getElementById('bet-buttons').style.display='none';
+  document.getElementById('call-btn').style.display='none';
+  document.getElementById('raise-btn').style.display='none';
+  document.getElementById('fold-btn').style.display='none';
+  document.getElementById('next-btn').style.display='block';
+  currentPlayerIdx++;
+  proceedPlayer();
 }
+
+// Next hand
+document.getElementById('next-btn').onclick=function() {
+  startHand();
+  this.style.display='none';
+};
 
 // Determine winner
 function determineWinner() {
   let bestPlayer=null;
   let bestRank=0;
   let bestName='';
-  for (let p of players) {
+  for(let p of players) {
     if (p.status==='fold') continue;
-    const handEval = evaluateHand(p.hand.concat(communityCards));
-    p.evalHand=handEval;
-    if (handEval.rank>bestRank) {
-      bestRank=handEval.rank;
+    const evalRes = evaluateHand(p.hand.concat(communityCards));
+    p.evalHand=evalRes;
+    if (evalRes.rank>bestRank) {
+      bestRank=evalRes.rank;
       bestPlayer=p;
       bestName=p.name;
     }
@@ -392,100 +444,50 @@ function determineWinner() {
   alert(`${bestName} wins with ${bestPlayer.evalHand.name}!`);
   bestPlayer.chips+=pot;
   updateChipsUI();
-  document.getElementById('next-btn').classList.add('hidden');
-  document.getElementById('start-btn').classList.remove('hidden');
+  document.getElementById('next-btn').style.display='none';
 }
 
-// Hand evaluation
+// Hand evaluation functions
 function evaluateHand(cards) {
-  const vals = cards.map(c => c.value);
-  const suits = cards.map(c => c.suit);
+  const vals = cards.map(c=>c.value);
+  const suits = cards.map(c=>c.suit);
   vals.sort((a,b)=>b-a);
+  
   const isFlush = suits.every(s=>s===suits[0]);
   let isStraight=true;
   for (let i=0; i<vals.length-1; i++) {
-    if (vals[i] !== vals[i+1]+1) isStraight=false;
+    if (vals[i]!==vals[i+1]+1) isStraight=false;
   }
   // Ace-low straight
   if (!isStraight && vals.includes(14)) {
     const lowVals=vals.slice();
-    const aceIndex=lowVals.indexOf(14);
-    lowVals[aceIndex]=1;
+    const aceIdx=lowVals.indexOf(14);
+    lowVals[aceIdx]=1;
     lowVals.sort((a,b)=>b-a);
     let straight=true;
     for (let i=0; i<lowVals.length-1; i++) {
-      if (lowVals[i] !== lowVals[i+1]+1) straight=false;
+      if (lowVals[i]!==lowVals[i+1]+1) { straight=false; break; }
     }
     if (straight) {
-      vals[aceIndex]=1;
+      vals[aceIdx]=1;
       vals.sort((a,b)=>b-a);
       isStraight=true;
     }
   }
+
   const counts={};
-  for (let v of vals) { counts[v]= (counts[v]||0)+1; }
-  const countValues=Object.values(counts).sort((a,b)=>b-a);
+  for (const v of vals) { counts[v]= (counts[v]||0)+1; }
+  const countArr=Object.values(counts).sort((a,b)=>b-a);
   if (isStraight && isFlush && vals[0]===14) return {rank:10, name:'Royal Flush'};
   if (isStraight && isFlush) return {rank:9, name:'Straight Flush'};
-  if (countValues[0]===4) return {rank:8, name:'Four of a Kind'};
-  if (countValues[0]===3 && countValues[1]===2) return {rank:7, name:'Full House'};
+  if (countArr[0]===4) return {rank:8, name:'Four of a Kind'};
+  if (countArr[0]===3 && countArr[1]===2) return {rank:7, name:'Full House'};
   if (isFlush) return {rank:6, name:'Flush'};
   if (isStraight) return {rank:5, name:'Straight'};
-  if (countValues[0]===3) return {rank:4, name:'Three of a Kind'};
-  if (countValues[0]===2 && countValues[1]===2) return {rank:3, name:'Two Pair'};
-  if (countValues[0]===2) return {rank:2, name:'One Pair'};
+  if (countArr[0]===3) return {rank:4, name:'Three of a Kind'};
+  if (countArr[0]===2 && countArr[1]===2) return {rank:3, name:'Two Pair'};
+  if (countArr[0]===2) return {rank:2, name:'One Pair'};
   return {rank:1, name:'High Card'};
-}
-
-function getCombinations(array, size) {
-  const results = [];
-  function helper(start, combo) {
-    if (combo.length===size) {
-      results.push([...combo]);
-      return;
-    }
-    for (let i=start; i<array.length; i++) {
-      combo.push(array[i]);
-      helper(i+1, combo);
-      combo.pop();
-    }
-  }
-  helper(0,[]);
-  return results;
-}
-
-// Animation helper
-function sleep(ms) { return new Promise(res => setTimeout(res, ms)); }
-
-// Start game
-let gameStarted=false;
-startHand();
-
-</script>
-
-<!-- Help menu -->
-<div style="position:fixed; bottom:10px; right:10px; background:#444; padding:10px; border-radius:8px; max-width:300px;">
-<button style="background:#888; color:#fff; padding:5px 10px; border:none; border-radius:4px;" onclick="toggleHelp()">Help & Info</button>
-<div id="help-text" style="display:none; margin-top:10px; color:#fff; font-size:14px;">
-<h3 style="margin-top:0;">Hand Evaluation Explanation</h3>
-<ul>
-<li><b>Royal Flush:</b> A, K, Q, J, 10 of the same suit (highest hand)</li>
-<li><b>Straight Flush:</b> Five consecutive cards of the same suit</li>
-<li><b>Four of a Kind:</b> Four cards of the same rank</li>
-<li><b>Full House:</b> Three of a kind plus a pair</li>
-<li><b>Flush:</b> Five cards of the same suit (not in sequence)</li>
-<li><b>Straight:</b> Five consecutive cards (mixed suits)</li>
-<li><b>Three of a Kind:</b> Three cards of the same rank</li>
-<li><b>Two Pair:</b> Two different pairs</li>
-<li><b>One Pair:</b> Two cards of the same rank</li>
-<li><b>High Card:</b> No other hand, highest card wins</li>
-</ul>
-</div>
-</div>
-<script>
-function toggleHelp() {
-  const helpDiv=document.getElementById('help-text');
-  helpDiv.style.display=helpDiv.style.display==='none'?'block':'none';
 }
 </script>
 </body>
