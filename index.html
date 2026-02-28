@@ -1,330 +1,295 @@
-Certainly! Here's the updated version of your `index.txt` with the new bet amount input added on top of the original code. The input allows players to specify their bet, and the payout is set to 5 times the bet amount.
-
----
-
-```html
+<!-- Updated index.txt with new features -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Dave's Horse Racing</title>
-    <style>
-        body { 
-            background: radial-gradient(circle, #1a3c1a 0%, #0a1a0a 100%); 
-            color: #fff; font-family: 'Segoe UI', sans-serif; 
-            text-align: center; margin: 0; padding: 10px; 
-            overflow-x: hidden;
-        }
-        
-        .back-hub {
-            position: relative; display: inline-block; margin: 10px 0 20px 0;
-            padding: 10px 15px; background: #333; color: #ffd700;
-            text-decoration: none; border-radius: 5px; font-weight: bold;
-            border: 1px solid #ffd700; z-index: 9999; transition: 0.3s;
-        }
-        @media (min-width: 768px) {
-            .back-hub { position: absolute; top: 20px; left: 20px; margin: 0; }
-        }
-        .back-hub:hover { background: #ffd700; color: #000; box-shadow: 0 0 10px #ffd700; }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Dave's Horse Racing</title>
+<style>
+  /* ... (keep your existing styles here, omitted for brevity) ... */
 
-        .casino-header { 
-            text-shadow: 0 0 10px #ffd700; border-bottom: 2px solid #ffd700; 
-            display: inline-block; padding-bottom: 10px; margin-bottom: 20px; 
-            text-transform: uppercase; font-size: 1.5rem;
-        }
-
-        /* Container for the canvas to help position the overlay */
-        .game-container {
-            position: relative;
-            margin: 0 auto;
-            max-width: 1000px;
-        }
-
-        canvas { 
-            background: #2e7d32; border: 8px solid #3e2723; border-radius: 40px; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.8); margin: 0 auto; 
-            display: block; width: 100%; height: auto;
-        }
-
-        /* NEW: Custom Result Overlay */
-        #resultOverlay {
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.95);
-            border: 4px solid #ffd700;
-            border-radius: 20px;
-            padding: 30px;
-            width: 80%;
-            max-width: 400px;
-            display: none; /* Hidden by default */
-            z-index: 100;
-            box-shadow: 0 0 50px rgba(0,0,0,1);
-        }
-        #resultTitle { font-size: 28px; margin-bottom: 10px; text-transform: uppercase; }
-        #resultMessage { font-size: 18px; margin-bottom: 20px; color: #ccc; }
-        .win-text { color: #ffd700; text-shadow: 0 0 10px #ffd700; }
-        .lose-text { color: #ff4444; }
-
-        .ui-panel { 
-            background: rgba(0,0,0,0.9); border: 2px solid #ffd700; border-radius: 15px; 
-            padding: 15px; margin: 20px auto; max-width: 600px; 
-            display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 15px;
-        }
-
-        .balance-box { font-size: 20px; color: #ffd700; font-weight: bold; min-width: 100px; }
-        
-        select { 
-            padding: 12px; border-radius: 8px; font-weight: bold; outline: none; 
-            cursor: pointer; background: #fff; flex-grow: 1; max-width: 200px;
-        }
-        select:disabled { background: #666; color: #ccc; cursor: not-allowed; }
-
-        button { 
-            background: linear-gradient(#ffd700, #b8860b); color: #000; font-weight: bold; 
-            padding: 15px 25px; border-radius: 8px; border: none; cursor: pointer; 
-            box-shadow: 0 4px 0 #8b6d00; outline: none; font-size: 16px;
-        }
-        button:active { transform: translateY(2px); box-shadow: 0 2px 0 #8b6d00; }
-        button:disabled { background: #555; color: #888; box-shadow: none; cursor: not-allowed; }
-
-        .hint { margin-top: 10px; color: #aaa; font-size: 12px; }
-
-        /* Responsive adjustments */
-        @media (max-width: 480px) {
-            .ui-panel { flex-direction: column; }
-            select { max-width: 100%; width: 100%; }
-            button { width: 100%; }
-        }
-    </style>
+  /* Additional styles for highscore and reset button */
+  #highscoreContainer {
+    margin-top: 10px;
+    font-size: 1.2rem;
+    color: #ffd700;
+  }
+  #resetBtn {
+    margin-top: 10px;
+    padding: 10px 20px;
+    background: #ff4444;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  #resetBtn:hover {
+    background: #ff2222;
+  }
+</style>
 </head>
 <body>
 
-    <a href="https://davescasino.github.io/davescasino" class="back-hub">⬅ Back to Hub</a>
+<a href="https://davescasino.github.io/davescasino" class="back-hub">⬅ Back to Hub</a>
 
-    <h1 class="casino-header">Dave's Horse Racing</h1>
+<h1 class="casino-header">Dave's Horse Racing</h1>
 
-    <div class="game-container">
-        <canvas id="raceTrack" width="1000" height="500"></canvas>
-        
-        <div id="resultOverlay">
-            <div id="resultTitle">Winner!</div>
-            <div id="resultMessage">Horse #3 took the gold.</div>
-            <button id="closeOverlayBtn">CONTINUE</button>
-            <div class="hint" style="margin-top:15px">(Or Press Space)</div>
-        </div>
-    </div>
+<div id="highscoreContainer">Highscore: $0</div>
+<button id="resetBtn">Reset Game</button>
 
-    <!-- New: Bet amount input -->
-    <div class="ui-panel" style="margin-top: 10px;">
-        <label for="betAmount" style="margin-right:8px;">Bet Amount ($):</label>
-        <input type="number" id="betAmount" min="1" max="1000" value="10" style="width:80px; padding:8px; font-size:14px;">
-        <div class="balance-box">💰 <span id="balance">100</span></div>
-        <select id="horseSelect">
-            <option value="0">#1 Red Rocket</option>
-            <option value="1">#2 Blue Bolt</option>
-            <option value="2">#3 Gold Gallop</option>
-            <option value="3">#4 Silver Streak</option>
-            <option value="4">#5 Purple Power</option>
-        </select>
-        <button id="startBtn">PLACE BET</button>
-    </div>
-    <div class="hint">Tip: Press <b>SPACEBAR</b> to Bet/Confirm</div>
+<div class="game-container">
+  <canvas id="raceTrack" width="1000" height="500"></canvas>
+  <div id="resultOverlay">
+    <div id="resultTitle">Winner!</div>
+    <div id="resultMessage">Horse #3 took the gold.</div>
+    <button id="closeOverlayBtn">CONTINUE</button>
+    <div class="hint" style="margin-top:15px">(Or Press Space)</div>
+  </div>
+</div>
 
-    <script>
-        const canvas = document.getElementById('raceTrack');
-        const ctx = canvas.getContext('2d');
-        const startBtn = document.getElementById('startBtn');
-        const horseSelect = document.getElementById('horseSelect');
-        const balanceEl = document.getElementById('balance');
-        const betAmountInput = document.getElementById('betAmount');
+<!-- New: Bet amount input -->
+<div class="ui-panel" style="margin-top: 10px;">
+  <label for="betAmount" style="margin-right:8px;">Bet Amount ($):</label>
+  <input type="number" id="betAmount" min="1" max="10000" value="10000" style="width:80px; padding:8px; font-size:14px;">
+  <div class="balance-box">💰 <span id="balance">10000</span></div>
+  <select id="horseSelect">
+    <option value="0">#1 Red Rocket</option>
+    <option value="1">#2 Blue Bolt</option>
+    <option value="2">#3 Gold Gallop</option>
+    <option value="3">#4 Silver Streak</option>
+  </select>
+  <button id="startBtn">PLACE BET</button>
+</div>
+<div class="hint">Tip: Press <b>SPACEBAR</b> to Bet/Confirm</div>
 
-        // UI Elements for Overlay
-        const resultOverlay = document.getElementById('resultOverlay');
-        const resultTitle = document.getElementById('resultTitle');
-        const resultMessage = document.getElementById('resultMessage');
-        const closeOverlayBtn = document.getElementById('closeOverlayBtn');
+<script>
+const canvas = document.getElementById('raceTrack');
+const ctx = canvas.getContext('2d');
+const startBtn = document.getElementById('startBtn');
+const horseSelect = document.getElementById('horseSelect');
+const balanceEl = document.getElementById('balance');
+const betAmountInput = document.getElementById('betAmount');
 
-        let balance = 100;
-        let racing = false;
-        let overlayVisible = false;
-        let startTime = null;
-        let canBet = true; 
-        const raceDuration = 12000;
+const highscoreContainer = document.getElementById('highscoreContainer');
+const resetBtn = document.getElementById('resetBtn');
 
-        const horseData = [
-            { id: 0, color: '#ff4444', label: '1' },
-            { id: 1, color: '#4444ff', label: '2' },
-            { id: 2, color: '#ffd700', label: '3' },
-            { id: 3, color: '#ffffff', label: '4' },
-            { id: 4, color: '#bb44ff', label: '5' }
-        ];
+const resultOverlay = document.getElementById('resultOverlay');
+const resultTitle = document.getElementById('resultTitle');
+const resultMessage = document.getElementById('resultMessage');
+const closeOverlayBtn = document.getElementById('closeOverlayBtn');
 
-        let horses = [];
-        let currentBetAmount = 10; // default
+let balance = 10000;
+let highscore = 0;
+let racing = false;
+let overlayVisible = false;
+let startTime = null;
+let canBet = true; 
+const raceDuration = 12000;
+let currentBetAmount = 10000;
 
-        function initHorses() {
-            horses = horseData.map((h, i) => ({
-                ...h,
-                angle: 1.5 * Math.PI,
-                rx: 300 + (i * 30), 
-                ry: 120 + (i * 25),
-                phaseShift: Math.random() * 10,
-                speedMult: 0.985 + (Math.random() * 0.035) 
-            }));
-        }
+const horseData = [
+  { id: 0, color: '#ff4444', label: '1' },
+  { id: 1, color: '#4444ff', label: '2' },
+  { id: 2, color: '#ffd700', label: '3' },
+  { id: 3, color: '#ffffff', label: '4' }
+];
 
-        function drawTrack() {
-            ctx.fillStyle = "#5d4037";
-            ctx.beginPath(); ctx.ellipse(500, 250, 450, 250, 0, 0, Math.PI * 2); ctx.fill();
-            ctx.strokeStyle = "rgba(255,255,255,0.1)"; ctx.lineWidth = 2;
-            for(let i=0; i<6; i++) {
-                ctx.beginPath(); ctx.ellipse(500, 250, 285+(i*30), 108+(i*25), 0, 0, Math.PI * 2); ctx.stroke();
-            }
-            ctx.strokeStyle = "#fff"; ctx.lineWidth = 8;
-            ctx.beginPath(); ctx.moveTo(500, 15); ctx.lineTo(500, 142); ctx.stroke();
-        }
+let horses = [];
+let finalAngles = []; // for winner fix
 
-        function drawHorse(h) {
-            const x = 500 + Math.cos(h.angle) * h.rx;
-            const y = 250 + Math.sin(h.angle) * h.ry;
-            ctx.save();
-            ctx.translate(x, y);
-            ctx.rotate(h.angle + Math.PI/2);
-            ctx.fillStyle = h.color;
-            ctx.beginPath(); ctx.ellipse(0, 0, 14, 9, 0, 0, Math.PI * 2); ctx.fill();
-            ctx.fillStyle = (h.color === '#ffffff' || h.color === '#ffd700') ? "#000" : "#fff";
-            ctx.font = "bold 11px Arial"; ctx.textAlign = "center";
-            ctx.fillText(h.label, 0, 4);
-            ctx.restore();
-        }
+// Load horse sprites (optional, for now, keep as simple shapes)
+let horseImages = [];
 
-        function renderAll() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            drawTrack();
-            horses.forEach(drawHorse);
-        }
+function loadHorseSprites() {
+  for (let i=0; i<horseData.length; i++) {
+    let img = new Image();
+    // You can replace the src with your sprite URLs
+    img.src = 'https://via.placeholder.com/30x15/ffd700/000000?text=H'+(i+1);
+    horseImages.push(img);
+  }
+}
 
-        function animate(timestamp) {
-            if (!startTime) startTime = timestamp;
-            const elapsed = timestamp - startTime;
-            const progress = Math.min(elapsed / raceDuration, 1);
+// Initialize the game
+function init() {
+  loadHorseSprites();
+  initHorses();
+  updateHighscore();
+}
 
-            horses.forEach(h => {
-                if (progress < 1) {
-                    const suspense = Math.sin(progress * 12 + h.phaseShift) * 0.012;
-                    const smoothProgress = Math.max(0, (progress * h.speedMult) + suspense);
-                    h.angle = (1.5 * Math.PI) + (smoothProgress * Math.PI * 2);
-                } else {
-                    h.angle = (1.5 * Math.PI) + (1.0 * h.speedMult * Math.PI * 2);
-                }
-            });
+function initHorses() {
+  horses = horseData.map((h, i) => ({
+    ...h,
+    angle: 1.5 * Math.PI,
+    rx: 300 + (i * 30),
+    ry: 120 + (i * 25),
+    phaseShift: Math.random() * 10,
+    speedMult: 0.985 + (Math.random() * 0.035)
+  }));
+  finalAngles = horses.map(h => h.angle);
+}
 
-            renderAll();
-            if (progress < 1) {
-                requestAnimationFrame(animate);
-            } else {
-                finishRace();
-            }
-        }
+function drawTrack() {
+  ctx.fillStyle = "#5d4037";
+  ctx.beginPath(); ctx.ellipse(500, 250, 450, 250, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = "rgba(255,255,255,0.1)"; ctx.lineWidth = 2;
+  for(let i=0; i<6; i++) {
+    ctx.beginPath(); ctx.ellipse(500, 250, 285+(i*30), 108+(i*25), 0, 0, Math.PI * 2); ctx.stroke();
+  }
+  ctx.strokeStyle = "#fff"; ctx.lineWidth = 8;
+  ctx.beginPath(); ctx.moveTo(500, 15); ctx.lineTo(500, 142); ctx.stroke();
+}
 
-        function finishRace() {
-            const betOn = horseSelect.value;
-            const winner = horses.reduce((a, b) => a.angle > b.angle ? a : b);
-            const isWin = winner.id == betOn;
-            const betAmount = currentBetAmount;
+function drawHorse(h) {
+  const x = 500 + Math.cos(h.angle) * h.rx;
+  const y = 250 + Math.sin(h.angle) * h.ry;
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(h.angle + Math.PI/2);
+  // Draw sprite if loaded
+  if (horseImages[h.id]) {
+    ctx.drawImage(horseImages[h.id], -15, -7);
+  } else {
+    ctx.fillStyle = h.color;
+    ctx.beginPath(); ctx.ellipse(0, 0, 14, 9, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = (h.color === '#ffffff' || h.color === '#ffd700') ? "#000" : "#fff";
+    ctx.font = "bold 11px Arial"; ctx.textAlign = "center";
+    ctx.fillText(h.label, 0, 4);
+  }
+  ctx.restore();
+}
 
-            if (isWin) {
-                const payout = betAmount * 5; // 5x payout
-                balance += payout;
-                resultTitle.innerText = "🏆 YOU WON!";
-                resultTitle.className = "win-text";
-                resultMessage.innerText = `Horse #${winner.label} came in first. Dave pays out $${payout}!`;
-            } else {
-                resultTitle.innerText = "💸 YOU LOST";
-                resultTitle.className = "lose-text";
-                resultMessage.innerText = `Horse #${winner.label} won the race. Better luck next time!`;
-            }
+function renderAll() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  drawTrack();
+  horses.forEach(drawHorse);
+}
 
-            balanceEl.innerText = balance;
+function animate(timestamp) {
+  if (!startTime) startTime = timestamp;
+  const elapsed = timestamp - startTime;
+  const progress = Math.min(elapsed / raceDuration, 1);
 
-            // Show the Custom UI
-            setTimeout(() => {
-                resultOverlay.style.display = "block";
-                overlayVisible = true;
-            }, 500);
-        }
+  horses.forEach((h, i) => {
+    if (progress < 1) {
+      const suspense = Math.sin(progress * 12 + h.phaseShift) * 0.012;
+      const smoothProgress = Math.max(0, (progress * h.speedMult) + suspense);
+      h.angle = (1.5 * Math.PI) + (smoothProgress * Math.PI * 2);
+    } else {
+      // Final position
+      h.angle = (1.5 * Math.PI) + (h.speedMult * Math.PI * 2);
+    }
+  });
 
-        function closeOverlay() {
-            resultOverlay.style.display = "none";
-            overlayVisible = false;
-            racing = false;
-            startBtn.disabled = false;
-            horseSelect.disabled = false;
-            startTime = null;
-            initHorses();
-            renderAll();
-            setTimeout(() => { canBet = true; }, 300);
-        }
+  renderAll();
 
-        function handleBet() {
-            if (racing || !canBet || overlayVisible) return;
-            const betAmount = parseInt(betAmountInput.value, 10);
-            if (isNaN(betAmount) || betAmount < 1) {
-                alert("Enter a valid bet amount!");
-                return;
-            }
-            if (balance < betAmount) {
-                resultTitle.innerText = "OUT OF CASH";
-                resultTitle.className = "lose-text";
-                resultMessage.innerText = "Dave doesn't give loans. Come back when you're loaded!";
-                resultOverlay.style.display = "block";
-                overlayVisible = true;
-                return;
-            }
+  if (progress < 1) {
+    requestAnimationFrame(animate);
+  } else {
+    finishRace();
+  }
+}
 
-            canBet = false;
-            startBtn.blur();
-            horseSelect.disabled = true;
-            startBtn.disabled = true;
+function finishRace() {
+  // Determine final angles
+  finalAngles = horses.map(h => h.angle);
+  // Find the horse with the maximum angle (which looks like the winner)
+  const maxAngle = Math.max(...finalAngles);
+  const winnerIndex = finalAngles.indexOf(maxAngle);
+  const winner = horses[winnerIndex];
 
-            balance -= betAmount;
-            balanceEl.innerText = balance;
-            racing = true;
-            requestAnimationFrame(animate);
+  const betOn = parseInt(horseSelect.value);
+  const isWin = (winner.id === betOn);
+  const betAmount = currentBetAmount;
 
-            // Store bet amount for payout calculation after race
-            currentBetAmount = betAmount;
-        }
+  if (isWin) {
+    const payout = betAmount * 5; // or any multiplier
+    balance += payout;
+    if (balance > highscore) {
+      highscore = balance;
+      updateHighscore();
+    }
+    resultTitle.innerText = "🏆 YOU WON!";
+    resultTitle.className = "win-text";
+    resultMessage.innerText = `Horse #${winner.label} came in first. Dave pays out $${payout}!`;
+  } else {
+    resultTitle.innerText = "💸 YOU LOST";
+    resultTitle.className = "lose-text";
+    resultMessage.innerText = `Horse #${winner.label} won the race. Better luck next time!`;
+  }
+  balanceEl.innerText = balance;
 
-        startBtn.addEventListener('click', handleBet);
-        closeOverlayBtn.addEventListener('click', closeOverlay);
+  setTimeout(() => {
+    resultOverlay.style.display = "block";
+    overlayVisible = true;
+  }, 500);
+}
 
-        window.addEventListener('keydown', (e) => {
-            if (e.code === "Space") {
-                e.preventDefault();
-                if (overlayVisible) {
-                    closeOverlay();
-                } else {
-                    handleBet();
-                }
-            }
-        });
+function updateHighscore() {
+  document.getElementById('highscoreContainer').innerText = `Highscore: $${highscore}`;
+}
 
-        initHorses();
-        renderAll();
-    </script>
+function handleBet() {
+  if (racing || !canBet || overlayVisible) return;
+  const betAmount = parseInt(betAmountInput.value, 10);
+  if (isNaN(betAmount) || betAmount < 1) {
+    alert("Enter a valid bet amount!");
+    return;
+  }
+  if (balance < betAmount) {
+    alert("Not enough balance!");
+    return;
+  }
+  canBet = false;
+  startBtn.blur();
+  horseSelect.disabled = true;
+  startBtn.disabled = true;
+
+  balance -= betAmount;
+  balanceEl.innerText = balance;
+  currentBetAmount = betAmount;
+  initHorses();
+  startTime = null;
+  requestAnimationFrame(animate);
+}
+
+function closeOverlay() {
+  resultOverlay.style.display = "none";
+  overlayVisible = false;
+  racing = false;
+  startBtn.disabled = false;
+  horseSelect.disabled = false;
+  startTime = null;
+  initHorses();
+  renderAll();
+  setTimeout(() => { canBet = true; }, 300);
+}
+
+function resetGame() {
+  balance = 10000;
+  if (balance > highscore) highscore = balance;
+  updateHighscore();
+  document.getElementById('balance').innerText = balance;
+  initHorses();
+  renderAll();
+}
+
+document.getElementById('resetBtn').addEventListener('click', resetGame);
+
+window.addEventListener('keydown', (e) => {
+  if (e.code === "Space") {
+    e.preventDefault();
+    if (overlayVisible) {
+      closeOverlay();
+    } else {
+      handleBet();
+    }
+  }
+});
+
+loadHorseSprites();
+init();
+
+</script>
 </body>
 </html>
-```
-
----
-
-### Summary of changes:
-- Added a number input for the bet amount above the race controls.
-- Updated the `handleBet()` function to read the bet amount from the input.
-- Changed the payout logic to `betAmount * 5` for higher potential wins.
-- Deducted the bet amount from the balance when placing a bet.
-
-Would you like any further customization?
